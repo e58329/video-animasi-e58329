@@ -1724,6 +1724,10 @@ class ExplainerScene(BaseScene):
         try:
             ov = dict(data.get("asset_overrides") or {})
             ov["__enabled__"] = asset_on
+            # policy zero-attribution: default REJECT lisensi butuh kredit;
+            # `assets_attribution: true` di YAML = opt-in eksplisit
+            ov["__allow_attr__"] = str(data.get("assets_attribution", "")).lower() \
+                in ("1", "true", "yes", "ya", "benar")
             set_asset_overrides(ov)
         except Exception:
             pass

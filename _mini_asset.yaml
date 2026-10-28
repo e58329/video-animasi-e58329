@@ -1,22 +1,23 @@
-# Demo pipeline aset otomatis: visual di bawah TIDAK punya fungsi
-# gambar manual di VISUALS -> otomatis dicari dari internet.
-# Coba juga override per-visual (opsional):
+# Demo pipeline aset otomatis — POLICY ZERO-ATTRIBUTION
+# Visual di bawah TIDAK punya fungsi gambar manual di VISUALS:
+#   rocket_launch -> CC0 pool (system-uicons, Unlicense)
+#   anchor_drop   -> CC0 pool via tangga kata-pertama (pinhead, CC0-1.0)
+#   quantum_field -> TIDAK ada yang CC0 -> otomatis ditolak -> kartu generic
+# (untuk pakai lisensi butuh-atribusi, tambahkan: assets_attribution: true)
 asset_overrides:
-  rocket_launch:
-    collection: "fluent-emoji"   # paksa ikon warna-warni (multicolor)
-  deep_sea:
-    color: "#42A5F5"             # mono tapi warna air khas channel
-title: "Uji Coba Aset Otomatis"
+  anchor_drop:
+    color: "#FFC107"             # jangkar kuning accent channel
+title: "Uji Aset Tanpa Atribusi"
 template: "explainer"
-question: "Kalimat uji untuk pipeline aset vektor otomatis. Semua visual di episode ini tidak digambar manual, tapi diambil otomatis dari internet lengkap dengan cek lisensinya."
+question: "Semua visual di episode ini diambil otomatis dari internet dengan lisensi yang tidak mewajibkan atribusi sama sekali. Jadi aman dari kelupaan kredit."
 sections:
-  - heading: "1. Uji Ambil Otomatis"
+  - heading: "1. Uji Zero-Attribution"
     points:
-      - text: "Roket meluncur, ikon ini datang dari koleksi fluent-emoji."
+      - text: "Roket ini dari koleksi system-uicons dengan lisensi unlicense."
         visual: "rocket_launch"
-      - text: "Magnet ditarik, ikon ini otomatis dipilih dari koleksi tabler."
-        visual: "magnet_field"
-      - text: "Laut dalam diwarnai biru sesuai override warna di file konten."
-        visual: "deep_sea"
-conclusion: "Kalau semua visual di atas tampil sebagai ikon berwarna, berarti pipeline aset otomatis bekerja. Kalau ada yang jatuh ke kartu generik, cek koneksi internet lalu render ulang."
+      - text: "Jangkar kuning ini dari koleksi pinhead dengan lisensi C C nol."
+        visual: "anchor_drop"
+      - text: "Kartu ini muncul karena tidak ada ikon bebas atribusi untuk kuantum."
+        visual: "quantum_field"
+conclusion: "Roket dan jangkar tampil dari sumber bebas atribusi. Kartu generik membuktikan penolakan lisensi berjalan aman. Video ini bebas kewajiban kredit."
 audio_duration: 46

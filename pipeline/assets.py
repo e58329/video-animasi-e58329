@@ -38,24 +38,53 @@ TIMEOUT = 10
 UA = "stickman3.7-pipeline/1.0 (educational video production)"
 
 # ---------- LISENSI ----------
-# (spdx, butuh_atribusi?)  — kalau lisensi tidak ada di sini => TOLAK
-LICENSE_ALLOW = {
-    "CC0-1.0": False, "CC-BY-4.0": True, "CC-BY-3.0": True,
-    "CC-BY-SA-4.0": True, "CC-BY-SA-3.0": True,
-    "MIT": True, "Apache-2.0": True, "ISC": True,
-    "BSD-2-Clause": True, "BSD-3-Clause": True,
-    # Wikimedia kadang menulis begini:
-    "Public domain": False, "CC BY 4.0": True, "CC BY-SA 4.0": True,
-    "CC BY 3.0": True, "CC BY-SA 3.0": True,
+# POLICY DEFAULT: ZERO-ATTRIBUTION (keputusan user 2026-10-28).
+# Hanya lisensi yang TIDAK mewajibkan atribusi yang dipakai, biar
+# video gak pernah kelupaan kredit. Kalau mau pakai lisensi butuh-
+# atribusi, harus opt-in eksplisit (lihat set_allow_attribution).
+LICENSE_ZERO = {"CC0-1.0", "Public domain", "Unlicense"}
+LICENSE_ATTR = {
+    "CC-BY-4.0", "CC-BY-3.0", "CC-BY-SA-4.0", "CC-BY-SA-3.0",
+    "MIT", "Apache-2.0", "ISC", "BSD-2-Clause", "BSD-3-Clause",
 }
+
+_ALLOW_ATTR = False          # default: REJECT semua lisensi butuh atribusi
+
+
+def set_allow_attribution(v):
+    """Opt-in eksplisit: True = CC-BY/MIT/dll boleh dipakai (WAJIB
+    kredit via `python -m pipeline.assets credits`)."""
+    global _ALLOW_ATTR
+    _ALLOW_ATTR = bool(v)
+
+
+def license_ok(spdx):
+    if spdx in LICENSE_ZERO:
+        return True
+    return _ALLOW_ATTR and spdx in LICENSE_ATTR
+
+
+def needs_attribution(spdx):
+    return spdx not in LICENSE_ZERO
+
+# Koleksi iconify yang lisensinya CC0/Unlicense — diprioritaskan
+# saat pencarian default (diambil dari /collections, terverifikasi).
+CC0_PREFIXES = [
+    "system-uicons", "maki", "temaki", "osmic", "pinhead",
+    "simple-icons", "logos", "cib", "cif",
+    "cryptocurrency", "cryptocurrency-color",
+]
 
 ICONIFY_API = "https://api.iconify.design"
 # Ranking koleksi: 0 = paling disukai (flat, colorful, cocok gaya channel)
 ICONIFY_RANK = {
-    "fluent-emoji": 0, "fluent-emoji-flat": 0, "twemoji": 1, "noto": 1,
-    "mdi": 2, "material-symbols": 2, "ic": 2,
-    "tabler": 3, "lucide": 3, "ri": 3, "ph": 3, "solar": 3,
-    "fa6-solid": 3, "game-icons": 4, "streamline-emojis": 1,
+    # koleksi CC0/Unlicense naik kelas biar policy zero-attribution lancar
+    "system-uicons": 1, "maki": 1, "temaki": 1, "osmic": 1, "pinhead": 1,
+    "simple-icons": 2, "cib": 2, "logos": 2, "cif": 2,
+    "fluent-emoji": 3, "fluent-emoji-flat": 3, "twemoji": 4, "noto": 4,
+    "mdi": 5, "material-symbols": 5, "ic": 5,
+    "tabler": 6, "lucide": 6, "ri": 6, "ph": 6, "solar": 6,
+    "fa6-solid": 6, "game-icons": 7, "streamline-emojis": 4,
 }
 
 
@@ -163,9 +192,11 @@ def validate_svg(svg_bytes, force_color=None):
 
 
 # ---------- PROVIDER: ICONIFY ----------
-def iconify_search(query, limit=16):
-    d = _get(f"{ICONIFY_API}/search",
-             params={"query": query, "limit": limit}).json()
+def iconify_search(query, limit=16, prefixes=None):
+    params = {"query": query, "limit": limit}
+    if prefixes:
+        params["prefixes"] = ",".join(prefixes)
+    d = _get(f"{ICONIFY_API}/search", params=params).json()
     out = []
     for full in d.get("icons", []):
         prefix, _, name = full.partition(":")
@@ -226,6 +257,11 @@ def iconify_pick(query, color=None, collection=None, limit=24):
             return [i for i in icons if i["prefix"] == coll]
         return icons
 
+    def _pool_cc0(q):
+        """Pool terbatas ke koleksi CC0/Unlicense (policy default)."""
+        icons, _ = iconify_search(q, limit=limit, prefixes=CC0_PREFIXES)
+        return icons
+
     def _direct(qwords, coll):
         """Search iconify kadang gak nge-index koleksi tertentu (mis.
         fluent-emoji). Coba tebak nama ikon langsung: rocket, rocket-filled,
@@ -262,6 +298,13 @@ def iconify_pick(query, color=None, collection=None, limit=24):
             print(f"[assets] koleksi '{collection}' gak punya kandidat "
                   f"'{query}' -> cari bebas")
     if not pool:
+        # policy zero-attribution: kejar dulu pool CC0/Unlicense
+        pool = _pool_cc0(query)
+        if not pool and len(query_words) > 1:
+            pool = _pool_cc0(query_words[0])
+        if pool:
+            print("[assets] pakai pool koleksi CC0 (zero-attribution)")
+    if not pool:
         pool = _pool(query, None)
     if not pool and len(query_words) > 1:
         pool = _pool(query_words[0], None)
@@ -275,7 +318,7 @@ def iconify_pick(query, color=None, collection=None, limit=24):
         for i in pool:
             L = lic.get(i["prefix"], {})
             spdx = L.get("spdx") or L.get("title") or ""
-            if spdx not in LICENSE_ALLOW:
+            if not license_ok(spdx):
                 continue
             s = _score_icon(i, query_words)
             if collection and i["prefix"] == collection:
@@ -327,7 +370,7 @@ def _wm_license(info):
         v = meta.get(k, {}).get("value", "") or ""
         return re.sub(r"<[^>]+>", "", v).strip()
     short = g("LicenseShortName")
-    for key in LICENSE_ALLOW:
+    for key in LICENSE_ZERO | LICENSE_ATTR:
         if short.lower() == key.lower() or short == key:
             return key, key
     # map longgar
@@ -336,7 +379,7 @@ def _wm_license(info):
         typ, sa, ver = m.groups()
         ver = (ver or "4.0").rstrip(".")
         spdx = f"CC-BY{'-SA' if sa else ''}-{ver}"
-        if spdx in LICENSE_ALLOW:
+        if spdx in LICENSE_ZERO | LICENSE_ATTR:
             return spdx, short
     if "public domain" in short.lower() or g("UsageTerms").lower().startswith("public domain"):
         return "Public domain", short or "Public domain"
@@ -363,7 +406,7 @@ def wikimedia_pick(query):
             if ii.get("mime") != "image/svg+xml":
                 continue
             spdx, ltitle = _wm_license(ii)
-            if not spdx or spdx not in LICENSE_ALLOW:
+            if not spdx or not license_ok(spdx):
                 continue
             meta = ii.get("extmetadata", {})
             artist = re.sub(r"<[^>]+>", "", meta.get("Artist", {}).get("value", "") or "").strip()
@@ -427,8 +470,10 @@ def github_pick(spec):
                 break
     except Exception:
         pass
-    if lic_spdx not in LICENSE_ALLOW:
-        raise AssetError(f"github: lisensi repo '{lic_spdx}' tidak di allowlist")
+    if not license_ok(lic_spdx):
+        raise AssetError(
+            f"github: lisensi repo '{lic_spdx}' "
+            f"{'butuh atribusi (policy default menolak)' if lic_spdx in LICENSE_ATTR else 'tidak dikenal'}")
     ok, info, why = validate_svg(svg)
     if not ok:
         raise AssetError(f"github: SVG gagal validasi: {why}")
@@ -489,7 +534,7 @@ def resolve(name, spec=None, force=False):
         "asset_id": picked["id"], "source": picked["source"],
         "license": picked["spdx"], "license_title": picked["license_title"],
         "attribution": picked["attribution"],
-        "needs_attribution": LICENSE_ALLOW.get(picked["spdx"], True),
+        "needs_attribution": needs_attribution(picked["spdx"]),
         "multicolor": picked["multicolor"],
         "fetched_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
@@ -564,6 +609,8 @@ def _cli():
     s2.add_argument("--collection")
     s2.add_argument("--github", help="owner/repo/path/file.svg")
     s2.add_argument("--force", action="store_true")
+    s2.add_argument("--allow-attribution", action="store_true",
+                    help="izinkan lisensi butuh atribusi (CC-BY/MIT/dll) — WAJIB kredit")
 
     s3 = sub.add_parser("prefetch")
     s3.add_argument("yaml_path")
@@ -572,6 +619,8 @@ def _cli():
     sub.add_parser("list")
 
     a = ap.parse_args()
+    if a.cmd == "fetch" and a.allow_attribution:
+        set_allow_attribution(True)
     if a.cmd == "search":
         if a.provider == "wikimedia":
             cands = []
@@ -596,7 +645,12 @@ def _cli():
             for i in sorted(icons, key=lambda x: -_score_icon(x, qw)):
                 L = lic.get(i["prefix"], {})
                 spdx = L.get("spdx", "?")
-                flag = "OK " if spdx in LICENSE_ALLOW else "TOL"
+                if spdx in LICENSE_ZERO:
+                    flag = "CC0"
+                elif license_ok(spdx):
+                    flag = "ATR"
+                else:
+                    flag = "TOL"
                 print(f"  [{flag}] {i['id']:<40} {spdx}")
     elif a.cmd == "fetch":
         spec = {"provider": a.provider, "color": a.color}
@@ -615,7 +669,7 @@ def _cli():
         print(f"   {e['asset_id']} | lisensi {e['license']} | "
               f"{'MULTICOLOR' if e['multicolor'] else 'mono'}")
         if e["needs_attribution"]:
-            print("   ⚠️ lisensi butuh atribusi — jangan lupa `python -m pipeline.assets credits`")
+            print("   ⚠️ lisensi ini butuh atribusi — jangan lupa `python -m pipeline.assets credits` + tempel ke deskripsi video")
     elif a.cmd == "prefetch":
         ok, fail = prefetch(a.yaml_path)
         for v, l in ok:

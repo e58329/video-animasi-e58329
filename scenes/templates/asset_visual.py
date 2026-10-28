@@ -38,12 +38,21 @@ _FAIL_CACHE = set()          # visual yang sudah terbukti gagal sesi ini
 def set_asset_overrides(d):
     global _OVERRIDES
     _OVERRIDES = d or {}
+    # policy lisensi: default ZERO-ATTRIBUTION; YAML `assets_attribution: true`
+    # = opt-in eksplisit pakai lisensi butuh-kredit (CC-BY/MIT/dll)
+    if set_allow_attribution is not None:
+        set_allow_attribution(bool(_OVERRIDES.get("__allow_attr__", False)))
 
 
 def _assets_enabled():
     return _OVERRIDES.get("__enabled__", True)
 
 
+try:
+    from pipeline.assets import resolve, AssetError as FetchError, \
+        set_allow_attribution
+except Exception:
+    set_allow_attribution = None
 def _load_index():
     try:
         with open(ASSET_DIR / "index.json", "r", encoding="utf-8") as f:

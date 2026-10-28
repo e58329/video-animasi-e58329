@@ -1,5 +1,10 @@
 # 🎨 Aset Vektor Otomatis (pipeline/assets.py)
 
+> **POLICY LISENSI: ZERO-ATTRIBUTION (default).** Hanya CC0 / Public
+> domain / Unlicense yang dipakai — video lo **bebas kewajiban kredit**,
+> gak akan kelupaan atribusi. Lisensi butuh-kredit (CC-BY, MIT, dsb.)
+> otomatis DITOLAK kecuali lo opt-in eksplisit (lihat bawah).
+
 Fitur ini bikin repo **mencari sendiri** vektor di internet kalau sebuah
 `visual:` di content YAML tidak punya fungsi gambar manual di registry
 `VISUALS` (scenes/templates/explainer.py). Alur lengkap:
@@ -41,14 +46,22 @@ assets: off          # default "auto"
 ### 2. Override per visual (opsional)
 ```yaml
 asset_overrides:
-  rocket_launch: {collection: "fluent-emoji"}          # paksa koleksi iconify
+  rocket_launch: {collection: "system-uicons"}         # paksa koleksi iconify
   periscope:     {provider: wikimedia}                 # ilustrasi dari Commons
   deep_sea:      {color: "#42A5F5"}                    # mono, warna kustom
   kapal:         {query: "submarine side view"}        # query kustom
   logo:          {github: "owner/repo/assets/logo.svg"}
 ```
 
-### 3. CLI manual
+### 3. Opt-in lisensi butuh-atribusi (HANYA kalau lo sadar mau ngasih kredit)
+```yaml
+assets_attribution: true   # default: absen = REJECT CC-BY/MIT/dll
+```
+Atau via CLI: `python -m pipeline.assets fetch <nama> --allow-attribution`.
+Kalau aktif, WAJIB jalankan `python -m pipeline.assets credits` dan
+tempel hasilnya ke deskripsi video.
+
+### 4. CLI manual
 ```bash
 python -m pipeline.assets search "rocket launch"        # lihat kandidat + lisensi
 python -m pipeline.assets fetch rocket_launch           # download + validasi + cache
@@ -57,11 +70,20 @@ python -m pipeline.assets list                          # aset ter-cache
 python -m pipeline.assets credits                       # buat ASSETS-ATTRIBUTION.md
 ```
 
-## Lisensi & atribusi (PENTING)
+## Lisensi & atribusi (POLICY ZERO-ATTRIBUTION)
 
-- Hanya lisensi di allowlist yang diterima: CC0, Public domain,
-  CC-BY, CC-BY-SA, MIT, Apache-2.0, BSD, ISC. Lisensi lain **ditolak**.
-- Mayoritas lisensi ini **wajib atribusi**. Sebelum publish video:
+- **Default: hanya CC0 / Public domain / Unlicense yang lolos.**
+  CC-BY, CC-BY-SA, MIT, Apache, BSD, ISC = otomatis ditolak → cari
+  kandidat lain → kalau gak ada, jatuh ke kartu generic. Video 100%
+  bebas kewajiban kredit.
+- Koleksi iconify CC0 yang dikejar otomatis: `system-uicons` (Unlicense),
+  `maki`, `temaki`, `osmic`, `pinhead`, `simple-icons`, `logos`, `cib`,
+  `cif`, `cryptocurrency`. Wikimedia difilter CC0/PD juga.
+- Konsekuensi jujur: cakupan lebih sempit dari ikon MIT/Apache
+  (±4.6rb ikon umum CC0 vs 200rb). Topik umum (roket, jangkar, bendera,
+  rumah sakit, logo brand) aman; topik niche bisa jatuh generic —
+  solusinya: gambar manual, ubah query, atau opt-in atribusi.
+- Kalau suatu saat opt-in (`assets_attribution: true`), sebelum publish:
   ```bash
   python -m pipeline.assets credits
   ```
@@ -77,13 +99,14 @@ SVG ditolak (lanjut kandidat berikutnya) kalau:
   render gradient SVG) → otomatis cari ikon flat pengganti.
 
 Cache: `assets/svg_auto/` (SVG + `index.json` + `credits.json`).
-Cache otomatis di-refresh kalau override berubah (hash spesifikasi),
+Cache otomatis di-refresh kalau override/policy berubah (hash spesifikasi),
 jadi ganti koleksi/warna di YAML langsung berefek tanpa hapus manual.
 
 ## Arsitektur singkat
 
 - `pipeline/assets.py` — fetcher + validator + cache + CLI (tanpa
-  dependensi baru selain `requests`).
+  dependensi baru selain `requests`). Policy lisensi di sini:
+  `LICENSE_ZERO` (selalu boleh) vs `LICENSE_ATTR` (butuh opt-in).
 - `scenes/templates/asset_visual.py` — `vis_asset()`: import SVGMobject,
   recolor, normalisasi ke zona visual, animasi masuk.
 - `scenes/templates/explainer.py` — 3 jahitan kecil: import, baca
