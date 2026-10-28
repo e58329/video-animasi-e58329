@@ -18,3 +18,9 @@ videos/1080p30/partial_movie_files/
 __pycache__/
 *.pyc
 .venv/
+*.mp4
+*.mp3
+*.wav
+*.png
+*.jpg
+output_test_*
