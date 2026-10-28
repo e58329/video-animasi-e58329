@@ -1,19 +1,20 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+# Media & hasil generate
+*.mp3
+*.mp4
+*.wav
+temp.*
+output/
+media/
+videos/1080p30/partial_movie_files/
 
-# Other files and folders
-.settings/
+# Subtitle hasil generate
+*.srt
+*.ass
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+# Junk pip
+=*.*
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
-node_modules
+# Python
+__pycache__/
+*.pyc
+.venv/
