@@ -34,20 +34,9 @@ def _T(txt, size=28, color=WHITE, bold=False):
     return Text(txt, font=FONT, font_size=size, color=color,
                 weight=("BOLD" if bold else "NORMAL"))
 
-# Penanda awal penomoran: angka "1." / "1)" atau kata urutan diikuti koma
-import re as _re
-ENUM_RE = _re.compile(
-    r"^(?:\d{1,2}[.)]|[Pp]ertama,|[Kk]edua,|[Kk]etiga,|[Kk]eempat,|[Kk]elima,|"
-    r"[Kk]eenam,|[Kk]etujuh,|[Kk]edelapan,|[Kk]esembilan,|[Kk]esepuluh,|"
-    r"[Tt]erakhir,|[Aa]kirnya,)$")
-
 def _wrap(txt, max_chars=56, max_lines=2):
-    # Baris baru dipaksa di SETIAP awal penomoran (tidak disambung 1 kalimat)
     words, lines, cur = txt.split(), [], ""
     for w in words:
-        if cur and ENUM_RE.match(w):
-            lines.append(cur); cur = w
-            continue
         if len(cur) + len(w) + 1 > max_chars and cur:
             lines.append(cur); cur = w
         else:
@@ -106,7 +95,7 @@ def _submarine(scale=1.0, color=PRIMARY, alpha=1.0):
                          fill_color=ACCENT, fill_opacity=1),
         RoundedRectangle(corner_radius=0.04, width=0.62, height=0.1, color=ACCENT,
                          fill_color=ACCENT, fill_opacity=1))
-    prop.move_to(hull.get_center() + LEFT * 2.6)
+    prop.move_to(hull.get_center() + LEFT * 2.4)
     allp = VGroup(hull, sail, VGroup(peri_v, peri_h), wins, pf, pb, prop)
     allp.scale(scale)
     return {"all": allp, "hull": hull, "sail": sail, "peri": VGroup(peri_v, peri_h),
@@ -147,10 +136,9 @@ def _arrow_updown(start, length, color, txt=None, up=True):
 
 # ---------- VISUAL: FUNGSI-FUNGSI ----------
 # Semua fungsi visual: def vis_xxx(s, dur) -> VGroup
-# Posisi standar zona visual: pusat y = -0.7
-# (dinaikkan dari -0.85 supaya label bawah visual tidak menabrak pita subtitle)
+# Posisi standar zona visual: pusat y = -0.85
 
-VIS_Y = -0.7
+VIS_Y = -0.85
 
 def _zone(yoff=0.0, xoff=0.0):
     return np.array([xoff, VIS_Y + yoff, 0])
@@ -628,7 +616,7 @@ def vis_life_supply(s, dur):
     return grp
 
 def vis_life_days(s, dur):
-    cal = Rectangle(width=2.6, height=1.8, color=WHITE, stroke_width=5).move_to(_zone(0.0) + LEFT * 2.2)
+    cal = Rectangle(width=2.6, height=1.8, color=GREY, stroke_width=4).move_to(_zone(0.0) + LEFT * 2.2)
     top = Rectangle(width=2.6, height=0.4, color=DANGER, fill_color=DANGER,
                     fill_opacity=1, stroke_width=0).move_to(cal.get_top())
     num = _T("100+", size=44, color=WHITE, bold=True).move_to(cal.get_center() + DOWN * 0.15)
@@ -666,7 +654,7 @@ def vis_escape_suit(s, dur):
     grp = VGroup(tower["all"], man, bub, up_a, lbl)
     s.play(FadeIn(tower["all"]), FadeIn(man), Write(lbl), run_time=1.2)
     s.play(LaggedStart(*[b.animate.shift(UP * 1.2) for b in bub], lag_ratio=0.25),
-           man.animate.shift(UP * 0.9), GrowArrow(up_a), run_time=1.3)
+           man.animate.shift(UP * 1.4), GrowArrow(up_a), run_time=1.3)
     return grp
 
 def vis_deep_mystery(s, dur):
@@ -736,846 +724,6 @@ def vis_generic(s, dur, key="default"):
     s.play(Create(card), Write(ttl), FadeIn(sub["all"]), run_time=1.6)
     return grp
 
-# ============================================================
-# ---------- VISUAL: MENARA ATC ----------
-# 38 fungsi visual episode "Bagaimana Menara ATC Bekerja"
-# Aturan layout: visual memakai _zone() (pusat y=-0.7),
-# puncak visual < y=0.9, label bawah >= y=-2.45
-# ============================================================
-
-def _ground(y=-1.9, op=0.22):
-    rect = Rectangle(width=24, height=9, color=GREY,
-                     fill_color=GREY, fill_opacity=op, stroke_width=0)
-    rect.move_to([0, y - 4.5, 0])
-    return rect
-
-def _plane(scale=1.0, color=WHITE, alpha=0.92):
-    """Pesawat tampak samping, hidung ke KANAN."""
-    body = Ellipse(width=2.7, height=0.5, color=color, fill_color=color,
-                   fill_opacity=alpha, stroke_width=2)
-    fin = Polygon([-1.15, 0.0, 0], [-0.72, 0.0, 0], [-0.5, 0.58, 0], [-0.92, 0.58, 0],
-                  color=color, fill_color=color, fill_opacity=alpha, stroke_width=2)
-    wing = Polygon([0.28, -0.05, 0], [-0.2, -0.05, 0], [-0.48, -0.42, 0], [-0.02, -0.42, 0],
-                   color=color, fill_color=color, fill_opacity=alpha, stroke_width=2)
-    win = VGroup(*[Dot(radius=0.045, color=BG).move_to(body.get_center() + UP * 0.06 + RIGHT * dx)
-                   for dx in (-0.5, -0.15, 0.2)])
-    cockpit = Dot(radius=0.06, color=BG).move_to(body.get_right() + LEFT * 0.28 + UP * 0.05)
-    g = VGroup(body, fin, wing, win, cockpit)
-    g.scale(scale)
-    return {"all": g, "body": body, "fin": fin, "wing": wing}
-
-def _plane_top(scale=1.0, color=WHITE, alpha=0.92):
-    """Pesawat tampak atas, hidung ke ATAS."""
-    fuse = RoundedRectangle(corner_radius=0.24, width=0.5, height=2.7, color=color,
-                            fill_color=color, fill_opacity=alpha, stroke_width=2)
-    wings = Polygon([-0.22, 0.35, 0], [0.22, 0.35, 0], [1.05, -0.45, 0], [0.8, -0.6, 0],
-                    [-0.22, -0.2, 0], color=color, fill_color=color,
-                    fill_opacity=alpha, stroke_width=2)
-    wings.move_to(fuse.get_center() + UP * 0.35)
-    wings2 = wings.copy().rotate(PI).move_to(fuse.get_center() + DOWN * 0.72)
-    g = VGroup(fuse, wings, wings2)
-    g.scale(scale)
-    return {"all": g, "fuse": fuse, "wings": wings}
-
-def _atc_tower(scale=1.0, alpha=0.3):
-    """Menara: batang trapesium + kabin kaca + antena suar."""
-    shaft = Polygon([-0.5, -2.1, 0], [0.5, -2.1, 0], [0.32, 0.15, 0], [-0.32, 0.15, 0],
-                    color=PRIMARY, fill_color=PRIMARY, fill_opacity=alpha, stroke_width=3)
-    cab = RoundedRectangle(corner_radius=0.14, width=1.65, height=0.72, color=PRIMARY,
-                           fill_color=PRIMARY, fill_opacity=alpha + 0.12, stroke_width=3)
-    cab.move_to(shaft.get_top() + UP * 0.48)
-    glass = Line(cab.get_left() + RIGHT * 0.12, cab.get_right() + LEFT * 0.12,
-                 color=WATER, stroke_width=2).set_opacity(0.9)
-    roof = RoundedRectangle(corner_radius=0.08, width=1.15, height=0.16, color=PRIMARY,
-                            fill_color=PRIMARY, fill_opacity=alpha + 0.2, stroke_width=2)
-    roof.move_to(cab.get_top() + UP * 0.14)
-    mast = Line(roof.get_top(), roof.get_top() + UP * 0.55, color=GREY, stroke_width=3)
-    beacon = Dot(radius=0.08, color=ACCENT, fill_color=ACCENT, fill_opacity=1
-                 ).move_to(mast.get_end())
-    g = VGroup(shaft, cab, glass, roof, mast, beacon)
-    g.scale(scale)
-    return {"all": g, "shaft": shaft, "cab": cab, "beacon": beacon}
-
-def _runway(w=6.2, h=1.05, angle=0):
-    rw = Rectangle(width=w, height=h, color=GREY, fill_color=GREY,
-                   fill_opacity=0.30, stroke_width=2).rotate(angle)
-    dash = DashedLine(LEFT * (w / 2 - 0.6), RIGHT * (w / 2 - 0.6),
-                      color=ACCENT, stroke_width=3, dash_length=0.3).rotate(angle)
-    thr = VGroup(*[Line(UP * i * 0.22, DOWN * i * 0.22, color=WHITE, stroke_width=3)
-                   for i in (0.28, 0.36)]).move_to(rw.get_left() + RIGHT * 0.28).rotate(angle, about_point=rw.get_center())
-    return VGroup(rw, dash, thr)
-
-def _cloud(w=1.8, color=GREY, op=0.55):
-    c = VGroup(*[Circle(radius=r, color=color, fill_color=color, fill_opacity=op,
-                        stroke_width=2)
-                 for r in (0.42, 0.55, 0.38)])
-    c[0].move_to(ORIGIN + LEFT * 0.5)
-    c[1].move_to(UP * 0.18)
-    c[2].move_to(RIGHT * 0.55)
-    c.set_width(w)
-    return c
-
-def _truck(color=DANGER, scale=1.0):
-    body = RoundedRectangle(corner_radius=0.08, width=1.35, height=0.55, color=color,
-                            fill_color=color, fill_opacity=0.85, stroke_width=2)
-    cab = RoundedRectangle(corner_radius=0.06, width=0.4, height=0.38, color=color,
-                           fill_color=color, fill_opacity=0.6, stroke_width=2)
-    cab.next_to(body, RIGHT, buff=0.02).align_to(body, DOWN)
-    w1 = Circle(radius=0.12, color=WHITE, fill_color=BG, fill_opacity=1, stroke_width=3)
-    w2 = w1.copy()
-    w1.move_to(body.get_bottom() + DOWN * 0.05 + LEFT * 0.42)
-    w2.move_to(body.get_bottom() + DOWN * 0.05 + RIGHT * 0.42)
-    lad = Line(body.get_top() + LEFT * 0.4, body.get_top() + RIGHT * 0.4,
-               color=WHITE, stroke_width=3)
-    g = VGroup(body, cab, w1, w2, lad).scale(scale)
-    return g
-
-def _bubble(txt, color=ACCENT, size=16, w=3.2):
-    t = _T(txt, size=size, color=color, bold=True)
-    box = SurroundingRectangle(t, color=color, corner_radius=0.12, buff=0.14)
-    box.set_stroke(width=2)
-    return VGroup(t, box)
-
-def atc_tower_intro(s, dur):
-    gnd = _ground()
-    tw = _atc_tower(0.95)
-    tw["all"].move_to(_zone(0.1) + LEFT * 2.6)
-    pl = _plane(0.8)
-    pl["all"].move_to(_zone(0.55) + RIGHT * 2.2)
-    waves = VGroup(*[Arc(radius=0.45 + i * 0.3, start_angle=-PI / 4, angle=PI / 2,
-                         color=ACCENT, stroke_width=3).move_to(
-        tw["cab"].get_right() + RIGHT * (0.5 + i * 0.75) + UP * 0.3) for i in range(3)])
-    lbl = _label("Otak Lalu Lintas Udara").move_to(_zone(-1.75))
-    grp = VGroup(gnd, tw["all"], pl["all"], waves, lbl)
-    s.play(FadeIn(gnd), Create(tw["all"]), run_time=1.0)
-    s.play(FadeIn(pl["all"], shift=LEFT * 0.6), Create(waves), Write(lbl), run_time=1.1)
-    s.play(Rotate(pl["wing"], angle=0.5, about_point=pl["all"].get_center()), run_time=0.6)
-    return grp
-
-def atc_tower_role(s, dur):
-    gnd = _ground()
-    tw = _atc_tower(0.8)
-    tw["all"].move_to(_zone(0.0) + LEFT * 0.2)
-    p1 = _plane_top(0.62)
-    p1["all"].move_to(_zone(0.75) + RIGHT * 2.6)
-    p2 = _plane_top(0.62)
-    p2["all"].move_to(_zone(-1.45) + RIGHT * 2.9)
-    l1 = _T("lepas landas", size=15, color=GREEN).next_to(p1["all"], RIGHT, buff=0.15)
-    l2 = _T("menunggu giliran", size=15, color=GREY).next_to(p2["all"], RIGHT, buff=0.15)
-    lbl = _label("Menjaga Jarak & Ketertiban", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95) + LEFT * 2.9)
-    grp = VGroup(gnd, tw["all"], p1["all"], p2["all"], l1, l2, lbl)
-    s.play(FadeIn(gnd), FadeIn(tw["all"]), run_time=0.9)
-    s.play(FadeIn(p1["all"], shift=UP * 0.4), FadeIn(p2["all"], shift=UP * 0.4),
-           Write(l1), Write(l2), Write(lbl), run_time=1.2)
-    return grp
-
-def atc_history(s, dur):
-    gnd = _ground()
-    old = Polygon([-0.7, -1.6, 0], [0.7, -1.6, 0], [0.5, 0.4, 0], [-0.5, 0.4, 0],
-                  color=GREY, fill_color=GREY, fill_opacity=0.3, stroke_width=3
-                  ).move_to(_zone(0.15) + LEFT * 2.4)
-    hut = Rectangle(width=1.3, height=0.6, color=PRIMARY, fill_color=PRIMARY,
-                    fill_opacity=0.25, stroke_width=3).move_to(old.get_top() + UP * 0.35)
-    pole = Line(hut.get_top(), hut.get_top() + UP * 0.9, color=GREY, stroke_width=3)
-    flag = Polygon(pole.get_top(), pole.get_top() + RIGHT * 0.55,
-                   pole.get_top() + RIGHT * 0.45 + UP * 0.22,
-                   pole.get_top() + UP * 0.22, color=ACCENT,
-                   fill_color=ACCENT, fill_opacity=0.9, stroke_width=0)
-    yr = _T("1920", size=42, color=ACCENT, bold=True).move_to(_zone(0.35) + RIGHT * 2.3)
-    where = _T("Croydon, London", size=18, color=WHITE).next_to(yr, DOWN, buff=0.15)
-    lbl = _label("Lahir dari Menara Kayu", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.8))
-    grp = VGroup(gnd, old, hut, pole, flag, yr, where, lbl)
-    s.play(FadeIn(gnd), Create(old), FadeIn(hut), run_time=0.9)
-    s.play(GrowFromPoint(pole, pole.get_bottom()), GrowFromPoint(flag, flag.get_left()),
-           Write(yr), FadeIn(where), Write(lbl), run_time=1.2)
-    return grp
-
-def atc_tower_cab(s, dur):
-    tw = _atc_tower(1.15)
-    tw["all"].move_to(_zone(0.0) + LEFT * 1.6)
-    ring = DashedVMobject(Arc(radius=2.5, start_angle=-PI / 2.2, angle=PI * 1.1,
-                              color=ACCENT, stroke_width=3), num_dashes=28
-                          ).move_to(tw["cab"].get_center())
-    eye = _T("360°", size=30, color=ACCENT, bold=True).move_to(
-        tw["cab"].get_center() + RIGHT * 3.3 + UP * 0.2)
-    lbl = _label("Kabin Kaca Pandang Bulat", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.85))
-    grp = VGroup(tw["all"], ring, eye, lbl)
-    s.play(Create(tw["all"]), run_time=0.9)
-    s.play(Create(ring), FadeIn(eye, scale=1.4), Write(lbl), run_time=1.2)
-    s.play(Indicate(tw["cab"], color=ACCENT), run_time=0.7)
-    return grp
-
-def atc_tower_shaft(s, dur):
-    shaft = Rectangle(width=1.7, height=3.4, color=PRIMARY, fill_color=PRIMARY,
-                      fill_opacity=0.18, stroke_width=3).move_to(_zone(0.1))
-    cab = RoundedRectangle(corner_radius=0.14, width=1.9, height=0.6, color=PRIMARY,
-                           fill_color=PRIMARY, fill_opacity=0.3, stroke_width=3
-                           ).next_to(shaft, UP, buff=0.05)
-    lift = Rectangle(width=0.45, height=2.6, color=ACCENT, stroke_width=2
-                     ).move_to(shaft.get_center() + LEFT * 0.55)
-    ladder = VGroup(*[Line(shaft.get_center() + RIGHT * 0.45 + UP * 1.25 + DOWN * i * 0.28,
-                           shaft.get_center() + RIGHT * 0.75 + UP * 1.25 + DOWN * i * 0.28,
-                           color=WHITE, stroke_width=2) for i in range(10)])
-    wires = VGroup(*[Line(shaft.get_center() + UP * 1.5 + RIGHT * dx,
-                          shaft.get_center() + DOWN * 1.6 + RIGHT * (dx + 0.18),
-                          color=WATER, stroke_width=2).set_opacity(0.8)
-                     for dx in (0.1, 0.28)])
-    l1 = _T("lift", size=15, color=ACCENT).next_to(lift, LEFT, buff=0.12)
-    l2 = _T("tangga", size=15, color=WHITE).move_to(shaft.get_center() + RIGHT * 1.95 + UP * 0.5)
-    l3 = _T("kabel", size=15, color=WATER).move_to(shaft.get_center() + RIGHT * 1.95 + DOWN * 0.5)
-    lbl = _label("Isi Batang Menara", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.05))
-    grp = VGroup(shaft, cab, lift, ladder, wires, l1, l2, l3, lbl)
-    s.play(Create(shaft), FadeIn(cab), run_time=0.9)
-    s.play(Create(lift), Write(l1), Create(ladder), Write(l2),
-           Create(wires), Write(l3), Write(lbl), run_time=1.3)
-    return grp
-
-def atc_lights(s, dur):
-    tw = _atc_tower(1.0)
-    tw["all"].move_to(_zone(-0.05) + LEFT * 1.8)
-    bolt = Polygon(ORIGIN, UP * 0.3 + RIGHT * 0.18, UP * 0.12 + RIGHT * 0.3,
-                   UP * 0.5 + RIGHT * 0.45, color=ACCENT, stroke_width=4
-                   ).scale(1.35).move_to(tw["beacon"].get_center() + UP * 0.8 + LEFT * 0.15)
-    halo = VGroup(*[Dot(radius=0.05, color=ACCENT).move_to(
-        tw["beacon"].get_center() + RIGHT * dx) for dx in (-0.35, 0.35)])
-    lbl = _label("Suar Tahan Kabut & Penyalur Petir", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.7) + RIGHT * 1.9)
-    grp = VGroup(tw["all"], bolt, halo, lbl)
-    s.play(Create(tw["all"]), run_time=0.9)
-    s.play(Create(bolt), FadeIn(halo, scale=1.5), Write(lbl), run_time=1.0)
-    s.play(Succession(*[FadeIn(halo, scale=1.6), FadeOut(halo)] * 2), run_time=0.9)
-    return grp
-
-def atc_radar_primary(s, dur):
-    dish = Arc(radius=0.85, start_angle=PI / 4, angle=PI / 2, color=WHITE,
-               stroke_width=5).move_to(_zone(0.0) + LEFT * 3.2).rotate(PI / 4)
-    mast = Line(dish.get_bottom() + DOWN * 0.4, dish.get_bottom(), color=GREY, stroke_width=4)
-    out = VGroup(*[Arc(radius=0.5 + i * 0.42, start_angle=-PI / 5, angle=2 * PI / 5,
-                       color=ACCENT, stroke_width=3).move_to(
-        dish.get_center() + RIGHT * (0.9 + i * 0.9)) for i in range(3)])
-    pl = _plane(0.75)
-    pl["all"].move_to(_zone(0.35) + RIGHT * 3.0)
-    back = VGroup(*[Arc(radius=0.4 + i * 0.35, start_angle=PI - PI / 5, angle=2 * PI / 5,
-                        color=DANGER, stroke_width=3).move_to(
-        pl["all"].get_center() + LEFT * (0.9 + i * 0.8)) for i in range(2)])
-    blip = Dot(radius=0.09, color=DANGER, fill_color=DANGER, fill_opacity=1
-               ).move_to(dish.get_center() + RIGHT * 1.1 + DOWN * 0.5)
-    lbl = _label("Pantulan = Posisi", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.8) + RIGHT * 0.6)
-    grp = VGroup(dish, mast, out, pl["all"], back, blip, lbl)
-    s.play(Create(dish), Create(mast), run_time=0.8)
-    s.play(Create(out), FadeIn(pl["all"], shift=LEFT * 0.5), run_time=0.9)
-    s.play(Create(back), FadeIn(blip, scale=2.0), Write(lbl), run_time=1.0)
-    return grp
-
-def atc_radar_secondary(s, dur):
-    screen = RoundedRectangle(corner_radius=0.15, width=2.2, height=1.5, color=PRIMARY,
-                              fill_color=PRIMARY, fill_opacity=0.15, stroke_width=3
-                              ).move_to(_zone(0.0) + LEFT * 3.3)
-    ask = Arrow(screen.get_right(), screen.get_right() + RIGHT * 1.3 + UP * 0.5,
-                color=WHITE, stroke_width=4)
-    pl = _plane(0.7)
-    pl["all"].move_to(_zone(0.45) + RIGHT * 1.6)
-    rep = Arrow(pl["all"].get_bottom() + DOWN * 0.2, screen.get_right() + RIGHT * 0.4 + DOWN * 0.45,
-                color=ACCENT, stroke_width=4)
-    code = _T("GA475 · FL350", size=17, color=ACCENT, bold=True
-              ).next_to(rep, DOWN, buff=0.22)
-    lbl = _label("Transponder Membalas Data", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.15) + RIGHT * 0.4)
-    grp = VGroup(screen, ask, pl["all"], rep, code, lbl)
-    s.play(Create(screen), run_time=0.8)
-    s.play(GrowArrow(ask), FadeIn(pl["all"], shift=LEFT * 0.4), run_time=0.9)
-    s.play(GrowArrow(rep), Write(code), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_radar_screen(s, dur):
-    scr = RoundedRectangle(corner_radius=0.18, width=6.4, height=3.3, color=PRIMARY,
-                           fill_color="#0A1122", fill_opacity=0.9, stroke_width=3
-                           ).move_to(_zone(-0.05))
-    grid = VGroup(*[Line(scr.get_left() + RIGHT * 0.15 + UP * i * 0.6,
-                         scr.get_right() + LEFT * 0.15 + UP * i * 0.6,
-                         color=PRIMARY, stroke_width=1).set_opacity(0.5)
-                    for i in range(5)])
-    sweep = Line(scr.get_center(), scr.get_center() + RIGHT * 2.9,
-                 color=ACCENT, stroke_width=3)
-    dots = VGroup()
-    tags = [("GA213", -1.9, 0.75), ("JT152", 0.6, -0.5), ("GA475", 2.1, 0.9)]
-    for name, dx, dy in tags:
-        d = Dot(radius=0.08, color=GREEN, fill_color=GREEN, fill_opacity=1
-                ).move_to(scr.get_center() + RIGHT * dx + UP * dy)
-        t = _T(name, size=13, color=GREEN).next_to(d, UP, buff=0.07)
-        dots.add(VGroup(d, t))
-    lbl = _label("Peta Hidup di Layar", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.05))
-    grp = VGroup(scr, grid, dots, lbl)
-    sweep_g = sweep
-    s.play(Create(scr), Create(grid), run_time=0.9)
-    s.add(sweep_g)
-    s.play(LaggedStart(*[FadeIn(g, scale=1.4) for g in dots], lag_ratio=0.25),
-           Write(lbl), run_time=1.1)
-    s.play(Rotate(sweep_g, angle=2 * PI, about_point=sweep_g.get_start()),
-           rate_func=linear, run_time=1.2)
-    grp.add(sweep_g)
-    return grp
-
-def atc_cab_desk(s, dur):
-    man = _stickman(0.85, pose="stand").move_to(_zone(0.15) + LEFT * 1.7)
-    desk = Rectangle(width=2.2, height=0.16, color=GREY, fill_color=GREY,
-                     fill_opacity=0.4, stroke_width=2).move_to(_zone(-0.35) + LEFT * 1.5)
-    leg = Line(desk.get_bottom() + RIGHT * 0.9, desk.get_bottom() + RIGHT * 0.9 + DOWN * 0.7,
-               color=GREY, stroke_width=3)
-    leg2 = leg.copy().shift(LEFT * 1.7)
-    mon1 = RoundedRectangle(corner_radius=0.08, width=1.35, height=0.95, color=PRIMARY,
-                            fill_color="#0A1122", fill_opacity=0.95, stroke_width=2
-                            ).move_to(_zone(0.35) + RIGHT * 0.35)
-    mon2 = mon1.copy().move_to(_zone(0.35) + RIGHT * 1.95)
-    d1 = VGroup(*[Dot(radius=0.05, color=GREEN).move_to(mon1.get_center() +
-                 RIGHT * np.sin(i * 1.3) * 0.45 + UP * np.cos(i) * 0.25) for i in range(4)])
-    d2 = VGroup(*[Dot(radius=0.05, color=ACCENT).move_to(mon2.get_center() +
-                 RIGHT * np.sin(i * 1.1) * 0.45 + UP * np.cos(i + 1) * 0.25) for i in range(4)])
-    lbl = _label("Setiap Titik = Puluhan Nyawa", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(man, desk, leg, leg2, mon1, mon2, d1, d2, lbl)
-    s.play(FadeIn(man), Create(desk), Create(leg), Create(leg2), run_time=0.9)
-    s.play(FadeIn(mon1), FadeIn(mon2), LaggedStart(*[FadeIn(d, scale=0.5) for d in d1 + d2],
-           lag_ratio=0.1), Write(lbl), run_time=1.2)
-    return grp
-
-def atc_cab_strips(s, dur):
-    rows = VGroup()
-    for i in range(4):
-        r = RoundedRectangle(corner_radius=0.05, width=3.4, height=0.5, color=WHITE,
-                             fill_color=WHITE, fill_opacity=0.12, stroke_width=2
-                             ).move_to(_zone(0.9 - i * 0.62) + LEFT * 1.2)
-        lines = VGroup(*[Line(r.get_left() + RIGHT * (0.35 + j * 0.85),
-                              r.get_left() + RIGHT * (0.85 + j * 0.85),
-                              color=WHITE, stroke_width=2).set_opacity(0.55)
-                         for j in range(3)])
-        rows.add(VGroup(r, lines))
-    hand = Arrow(rows[0].get_center() + RIGHT * 2.6, rows[0].get_center() + RIGHT * 0.1,
-                 color=ACCENT, stroke_width=5)
-    lbl = _label("Strip Penerbangan: Catatan Setiap Instruksi", color=WHITE, size=20, bold=True
-                 ).move_to(_zone(-1.6))
-    grp = VGroup(rows, lbl)
-    s.play(LaggedStart(*[FadeIn(r, shift=RIGHT * 0.4) for r in rows], lag_ratio=0.2),
-           run_time=1.1)
-    s.play(GrowArrow(hand), Write(lbl), run_time=1.0)
-    grp.add(hand)
-    return grp
-
-def atc_cab_team(s, dur):
-    m1 = _stickman(0.8).move_to(_zone(0.1) + LEFT * 3.4)
-    m2 = _stickman(0.8).move_to(_zone(0.1))
-    m3 = _stickman(0.8).move_to(_zone(0.1) + RIGHT * 3.4)
-    hs = VGroup(*[Arc(radius=0.3, start_angle=-PI / 3, angle=2 * PI / 3, color=ACCENT,
-                      stroke_width=3).move_to(m.get_center() + UP * 0.42)
-                 for m in (m1, m2, m3)])
-    t1 = _T("LOCAL", size=16, color=ACCENT, bold=True).next_to(m1, DOWN, buff=0.18)
-    t2 = _T("GROUND", size=16, color=ACCENT, bold=True).next_to(m2, DOWN, buff=0.18)
-    t3 = _T("KOORDINATOR", size=16, color=ACCENT, bold=True).next_to(m3, DOWN, buff=0.18)
-    lbl = _label("Tiga Peran, Satu Tim", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(m1, m2, m3, hs, t1, t2, t3, lbl)
-    s.play(LaggedStart(*[FadeIn(m, shift=UP * 0.4) for m in (m1, m2, m3)], lag_ratio=0.2),
-           run_time=1.0)
-    s.play(Create(hs), Write(t1), Write(t2), Write(t3), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_radio_phrase(s, dur):
-    tw = _atc_tower(0.62)
-    tw["all"].move_to(_zone(-0.15) + LEFT * 3.6)
-    pl = _plane(0.7)
-    pl["all"].move_to(_zone(-0.15) + RIGHT * 3.4)
-    b1 = _bubble("cleared to climb", ACCENT, 16)
-    b1.move_to(_zone(0.85) + LEFT * 0.7)
-    b2 = _bubble("cleared to descend", WATER, 16)
-    b2.move_to(_zone(-1.05) + RIGHT * 0.7)
-    a1 = Arrow(b1.get_right(), b1.get_right() + RIGHT * 0.9 + DOWN * 0.25,
-               color=ACCENT, stroke_width=3)
-    a2 = Arrow(b2.get_left(), b2.get_left() + LEFT * 0.9 + UP * 0.25,
-               color=WATER, stroke_width=3)
-    lbl = _label("Frasa Standar Internasional", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(tw["all"], pl["all"], b1, b2, a1, a2, lbl)
-    s.play(FadeIn(tw["all"]), FadeIn(pl["all"]), run_time=0.8)
-    s.play(FadeIn(b1, shift=RIGHT * 0.4), GrowArrow(a1), run_time=0.9)
-    s.play(FadeIn(b2, shift=LEFT * 0.4), GrowArrow(a2), Write(lbl), run_time=0.9)
-    return grp
-
-def atc_radio_clash(s, dur):
-    b1 = _bubble("pesawat A: —", WHITE, 16)
-    b1.move_to(_zone(0.55) + LEFT * 2.5)
-    b2 = _bubble("pesawat B: —", WHITE, 16)
-    b2.move_to(_zone(-0.45) + LEFT * 2.5)
-    clash = _T("✕", size=52, color=DANGER, bold=True).move_to(_zone(0.05) + RIGHT * 0.7)
-    lost = _T("instruksi hilang", size=17, color=DANGER).next_to(clash, DOWN, buff=0.15)
-    lbl = _label("Satu Frekuensi, Satu Suara", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(b1, b2, clash, lost, lbl)
-    s.play(FadeIn(b1, shift=RIGHT * 0.4), FadeIn(b2, shift=RIGHT * 0.4), run_time=0.9)
-    s.play(FadeIn(clash, scale=1.8), FadeIn(lost), Write(lbl), run_time=1.0)
-    return grp
-
-def atc_readback(s, dur):
-    tw = _atc_tower(0.62)
-    tw["all"].move_to(_zone(-0.1) + LEFT * 3.6)
-    pl = _plane(0.7)
-    pl["all"].move_to(_zone(-0.1) + RIGHT * 3.4)
-    b1 = _bubble("turun ke 3.000 kaki", ACCENT, 15)
-    b1.move_to(_zone(0.75) + LEFT * 0.4)
-    b2 = _bubble("readback: 3.000 kaki", GREEN, 15)
-    b2.move_to(_zone(-0.8) + RIGHT * 0.4)
-    ok = _T("✓", size=40, color=GREEN, bold=True).next_to(b2, RIGHT, buff=0.2)
-    lbl = _label("Diulang & Dicek Sebelum Bergerak", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(tw["all"], pl["all"], b1, b2, ok, lbl)
-    s.play(FadeIn(tw["all"]), FadeIn(pl["all"]), FadeIn(b1, shift=RIGHT * 0.4), run_time=0.9)
-    s.play(FadeIn(b2, shift=LEFT * 0.4), FadeIn(ok, scale=1.6), Write(lbl), run_time=1.0)
-    return grp
-
-def atc_taxi(s, dur):
-    rw = _runway(4.6, 0.95).move_to(_zone(-1.15) + RIGHT * 1.6)
-    gate = RoundedRectangle(corner_radius=0.1, width=1.5, height=0.9, color=GREY,
-                            fill_color=GREY, fill_opacity=0.3, stroke_width=2
-                            ).move_to(_zone(-0.55) + LEFT * 3.3)
-    gtx = _T("gerbang", size=14, color=GREY).next_to(gate, UP, buff=0.1)
-    path = VMobject(color=ACCENT, stroke_width=3)
-    path.set_points_smoothly([gate.get_right() + RIGHT * 0.05,
-                              _zone(-0.75), _zone(-1.15) + LEFT * 1.4,
-                              rw.get_left() + UP * 0.1])
-    pl = _plane_top(0.55)
-    pl["all"].move_to(gate.get_right() + RIGHT * 0.3).rotate(PI / 2)
-    lbl = _label("Rute Berjalan yang Aman", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(0.75))
-    grp = VGroup(rw, gate, gtx, path, pl["all"], lbl)
-    s.play(Create(rw), FadeIn(gate), Write(gtx), run_time=0.9)
-    s.play(Create(path), Write(lbl), run_time=0.9)
-    s.play(MoveAlongPath(pl["all"], path), run_time=1.3)
-    return grp
-
-def atc_holdshort(s, dur):
-    rw = _runway(3.2, 1.3).move_to(_zone(-0.35) + LEFT * 2.6)
-    hold = VGroup(Line(UP * 0.55, DOWN * 0.55, color=ACCENT, stroke_width=6),
-                  Line(UP * 0.45, DOWN * 0.45, color=ACCENT, stroke_width=6)
-                  ).move_to(rw.get_right() + RIGHT * 1.15)
-    pl = _plane_top(0.55)
-    pl["all"].move_to(hold.get_center() + RIGHT * 1.35)
-    sign = _T("HOLD", size=15, color=DANGER, bold=True).next_to(hold, UP, buff=0.15)
-    stop = _T("berhenti", size=15, color=ACCENT).next_to(pl["all"], DOWN, buff=0.15)
-    lbl = _label("Garis Kuning Ganda: Batas Mutlak", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(rw, hold, pl["all"], sign, stop, lbl)
-    s.play(Create(rw), Create(hold), Write(sign), run_time=0.9)
-    s.play(FadeIn(pl["all"], shift=LEFT * 0.7), Write(stop), Write(lbl), run_time=1.0)
-    s.play(Indicate(hold, color=DANGER), run_time=0.7)
-    return grp
-
-def atc_takeoff(s, dur):
-    gnd = _ground()
-    rw = _runway(7.0, 0.5).move_to(_zone(-1.55))
-    pl = _plane(0.8)
-    pl["all"].move_to(_zone(-1.3) + LEFT * 1.9)
-    cmd = _bubble("cleared for takeoff", ACCENT, 15)
-    cmd.move_to(_zone(0.55) + LEFT * 1.4)
-    lbl = _label("Mesin Degas Penuh — Menuju Langit", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(gnd, rw, pl["all"], cmd, lbl)
-    s.play(FadeIn(gnd), Create(rw), FadeIn(pl["all"]), FadeIn(cmd), run_time=1.0)
-    s.play(pl["all"].animate.rotate(-10 * DEGREES, about_point=pl["all"].get_bottom()
-           + LEFT * 0.5).shift(RIGHT * 2.4 + UP * 1.15), FadeOut(cmd), Write(lbl), run_time=1.3)
-    return grp
-
-def atc_climb(s, dur):
-    steps = VGroup(*[Line(LEFT * 2.6 + UP * i * 0.62, RIGHT * 2.6 + UP * i * 0.62,
-                          color=PRIMARY, stroke_width=3).set_opacity(0.75)
-                     for i in range(4)])
-    steps.move_to(_zone(-0.4))
-    alts = VGroup(*[_T(f"{(i + 1) * 4}.000 ft", size=14, color=GREY
-                       ).next_to(steps[i], RIGHT, buff=0.2) for i in range(4)])
-    pl = _plane(0.62)
-    pl["all"].move_to(steps[0].get_left() + RIGHT * 0.6 + DOWN * 0.25).rotate(-6 * DEGREES)
-    lbl = _label("Tangga Ketinggian Menuju Jelajah", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.15))
-    grp = VGroup(steps, alts, pl["all"], lbl)
-    s.play(Create(steps), LaggedStart(*[FadeIn(a) for a in alts], lag_ratio=0.2),
-           run_time=1.1)
-    s.play(pl["all"].animate.move_to(steps[3].get_right() + LEFT * 0.9 + UP * 0.25),
-           Write(lbl), run_time=1.3)
-    return grp
-
-def atc_levels(s, dur):
-    lane_e = Line(LEFT * 4.2 + UP * 0.55, RIGHT * 4.2 + UP * 0.55, color=PRIMARY,
-                  stroke_width=3).set_opacity(0.7)
-    lane_w = Line(LEFT * 4.2 + DOWN * 0.65, RIGHT * 4.2 + DOWN * 0.65, color=PRIMARY,
-                  stroke_width=3).set_opacity(0.7)
-    pe = VGroup(*[_plane_top(0.42)["all"].move_to(lane_e.get_start() + RIGHT * (1.1 + i * 2.1)
-                 + UP * 0.28) for i in range(2)])
-    pw = VGroup()
-    for i in range(2):
-        p = _plane_top(0.42)
-        p["all"].move_to(lane_w.get_end() + LEFT * (1.1 + i * 2.1) + DOWN * 0.28).rotate(PI)
-        pw.add(p["all"])
-    te = _T("TIMUR — ganjil", size=15, color=ACCENT, bold=True).move_to(
-        lane_e.get_start() + LEFT * 1.15 + UP * 0.35)
-    tw_ = _T("BARAT — genap", size=15, color=WATER, bold=True).move_to(
-        lane_w.get_start() + LEFT * 1.15 + DOWN * 0.35)
-    lbl = _label("Ganjil Ke Timur, Genap Ke Barat", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(lane_e, lane_w, pe, pw, te, tw_, lbl)
-    s.play(Create(lane_e), Create(lane_w), Write(te), Write(tw_), run_time=0.9)
-    s.play(LaggedStart(*[FadeIn(p, shift=LEFT * 0.5) for p in pe], lag_ratio=0.25),
-           LaggedStart(*[FadeIn(p, shift=RIGHT * 0.5) for p in pw], lag_ratio=0.25),
-           Write(lbl), run_time=1.2)
-    return grp
-
-def atc_center(s, dur):
-    c1 = DashedVMobject(Circle(radius=1.5, color=PRIMARY, stroke_width=3), num_dashes=22
-                        ).move_to(_zone(0.0) + LEFT * 2.5)
-    c2 = DashedVMobject(Circle(radius=1.5, color=WATER, stroke_width=3), num_dashes=22
-                        ).move_to(_zone(0.0) + RIGHT * 2.5)
-    t1 = _T("PENDekatan", size=15, color=PRIMARY, bold=True).move_to(c1.get_center() + DOWN * 1.7)
-    t2 = _T("RUTE", size=15, color=WATER, bold=True).move_to(c2.get_center() + DOWN * 1.7)
-    hand = Arrow(c1.get_right(), c2.get_left(), color=ACCENT, stroke_width=4)
-    pl = _plane(0.5)
-    pl["all"].move_to(c1.get_center() + LEFT * 0.6)
-    lbl = _label("Serah Terima Kendali yang Rapi", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(c1, c2, t1, t2, hand, pl["all"], lbl)
-    s.play(Create(c1), Create(c2), Write(t1), Write(t2), run_time=0.9)
-    s.play(GrowArrow(hand), Write(lbl), run_time=0.9)
-    s.play(pl["all"].animate.move_to(c2.get_center() + RIGHT * 0.6), run_time=1.0)
-    return grp
-
-def atc_glidepath(s, dur):
-    gnd = _ground()
-    rw = _runway(3.4, 0.5).move_to(_zone(-1.75) + RIGHT * 3.0)
-    path = Line(_zone(0.7) + LEFT * 3.6, rw.get_left() + UP * 0.2,
-                color=ACCENT, stroke_width=3)
-    ang = _T("3°", size=26, color=ACCENT, bold=True).move_to(
-        path.get_start() + RIGHT * 0.75 + DOWN * 0.3)
-    pl = _plane(0.6)
-    pl["all"].move_to(path.get_start() + DOWN * 0.15).rotate(-4 * DEGREES)
-    lbl = _label("Glide Path: Jalur Melayang 3 Derajat", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.15) + LEFT * 1.0)
-    grp = VGroup(gnd, rw, path, ang, pl["all"], lbl)
-    s.play(FadeIn(gnd), Create(rw), Create(path), Write(ang), run_time=1.0)
-    s.play(pl["all"].animate.move_to(path.get_end() + UP * 0.35), Write(lbl), run_time=1.3)
-    return grp
-
-def atc_touchdown(s, dur):
-    gnd = _ground()
-    rw = _runway(7.0, 0.5).move_to(_zone(-1.55))
-    pl = _plane(0.75)
-    pl["all"].move_to(_zone(-1.25) + RIGHT * 2.2)
-    smoke = VGroup(*[
-        Circle(radius=0.1, color=GREY, fill_color=GREY, fill_opacity=0.5, stroke_width=0
-               ).move_to(pl["all"].get_bottom() + DOWN * 0.05 + LEFT * i * 0.3)
-        for i in range(3)])
-    speed = VGroup(*[Line(ORIGIN, LEFT * 0.45, color=WATER, stroke_width=2).set_opacity(0.7
-                    ).move_to(pl["all"].get_center() + UP * dy + RIGHT * 1.4)
-                    for dy in (-0.1, 0.15, 0.4)])
-    lbl = _label("Roda Menyentuh Aspal", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(gnd, rw, pl["all"], smoke, speed, lbl)
-    s.play(FadeIn(gnd), Create(rw), run_time=0.8)
-    s.play(pl["all"].animate.move_to(_zone(-1.32) + LEFT * 0.2), run_time=1.0)
-    s.play(LaggedStart(*[FadeIn(p, scale=1.6) for p in smoke], lag_ratio=0.15),
-           Write(lbl), run_time=1.0)
-    return grp
-
-def atc_autoland(s, dur):
-    fog = Rectangle(width=13, height=1.5, color=WHITE, fill_color=WHITE,
-                    fill_opacity=0.16, stroke_width=0).move_to(_zone(-1.5))
-    rw = _runway(4.6, 0.5).move_to(_zone(-1.75))
-    path = Line(_zone(0.75) + LEFT * 3.4, rw.get_left() + UP * 0.15,
-                color=ACCENT, stroke_width=3)
-    beam = DashedLine(rw.get_left() + UP * 0.1, _zone(0.9) + LEFT * 3.2,
-                      color=GREEN, stroke_width=2)
-    ils = _T("ILS", size=20, color=GREEN, bold=True).next_to(beam.get_end(), UP, buff=0.12)
-    pl = _plane(0.6)
-    pl["all"].move_to(path.get_start() + DOWN * 0.12).rotate(-4 * DEGREES)
-    lbl = _label("Menuntun Pendaratan di Tengah Kabut", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.15) + LEFT * 1.2)
-    grp = VGroup(fog, rw, path, beam, ils, pl["all"], lbl)
-    s.play(FadeIn(fog), Create(rw), Create(path), run_time=1.0)
-    s.play(Create(beam), Write(ils), run_time=0.8)
-    s.play(pl["all"].animate.move_to(path.get_end() + UP * 0.3), Write(lbl), run_time=1.2)
-    return grp
-
-def atc_separation(s, dur):
-    p1 = _plane_top(0.55)
-    p1["all"].move_to(_zone(0.5) + LEFT * 1.2)
-    p2 = _plane_top(0.55)
-    p2["all"].move_to(_zone(0.5) + RIGHT * 2.6)
-    p3 = _plane_top(0.55)
-    p3["all"].move_to(_zone(-1.1) + RIGHT * 2.6)
-    dh = DoubleArrow(p1["all"].get_right() + RIGHT * 0.15, p2["all"].get_left() + LEFT * 0.15,
-                     color=ACCENT, stroke_width=4, buff=0)
-    dv = DoubleArrow(p2["all"].get_bottom() + DOWN * 0.15, p3["all"].get_top() + UP * 0.15,
-                     color=WATER, stroke_width=4, buff=0)
-    th = _T("5 NM", size=16, color=ACCENT, bold=True).next_to(dh, UP, buff=0.1)
-    tv = _T("1.000 ft", size=16, color=WATER, bold=True).next_to(dv, RIGHT, buff=0.12)
-    lbl = _label("Dipisah Selalu, Tanpa Kompromi", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.1) + LEFT * 1.2)
-    grp = VGroup(p1["all"], p2["all"], p3["all"], dh, dv, th, tv, lbl)
-    s.play(FadeIn(p1["all"]), FadeIn(p2["all"]), FadeIn(p3["all"]), run_time=0.9)
-    s.play(GrowArrow(dh), GrowArrow(dv), Write(th), Write(tv), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_vector(s, dur):
-    p1 = _plane_top(0.55)
-    p1["all"].move_to(_zone(0.45) + LEFT * 2.4)
-    p2 = _plane_top(0.55)
-    p2["all"].move_to(_zone(0.45) + RIGHT * 2.2)
-    warn = _T("jarak menyempit!", size=16, color=DANGER, bold=True
-              ).move_to(_zone(1.15))
-    turn = Arc(radius=1.5, start_angle=PI * 0.95, angle=-PI * 0.55, color=DANGER,
-               stroke_width=4).move_to(p1["all"].get_center() + UP * 0.15)
-    arrow_tip = Arrow(turn.get_end(), turn.get_end() + RIGHT * 0.45,
-                      color=DANGER, stroke_width=4)
-    lbl = _label("Satu Diputar, Jarak Terbuka Lagi", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.85))
-    grp = VGroup(p1["all"], p2["all"], warn, turn, arrow_tip, lbl)
-    s.play(FadeIn(p1["all"], shift=RIGHT * 0.5), FadeIn(p2["all"], shift=LEFT * 0.5),
-           Write(warn), run_time=0.9)
-    s.play(Create(turn), GrowArrow(arrow_tip), Write(lbl), run_time=1.1)
-    s.play(p1["all"].animate.rotate(35 * DEGREES).shift(UP * 0.35 + LEFT * 0.4), run_time=0.9)
-    return grp
-
-def atc_wake(s, dur):
-    big = _plane(0.95)
-    big["all"].move_to(_zone(0.45) + RIGHT * 2.3)
-    small = _plane(0.55)
-    small["all"].move_to(_zone(0.45) + LEFT * 3.3)
-    vort = VGroup()
-    for dx in (-1.0, -1.5):
-        col = VGroup(*[Arc(radius=0.16 + (abs(i) * 0.05), start_angle=0, angle=PI * 1.4,
-                           color=WATER, stroke_width=2).set_opacity(0.75
-                           ).move_to(big["all"].get_center() + LEFT * abs(dx) * 0.9 + UP * i * 0.2)
-                       for i in range(-2, 3)])
-        vort.add(col)
-    wait = _T("menunggu", size=15, color=ACCENT).next_to(small["all"], DOWN, buff=0.15)
-    lbl = _label("Pusaran Besar Menggulingkan Sayap Kecil", color=WHITE, size=20, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(big["all"], small["all"], vort, wait, lbl)
-    s.play(FadeIn(big["all"]), FadeIn(small["all"]), Write(wait), run_time=0.9)
-    s.play(LaggedStart(*[Create(v) for v in vort], lag_ratio=0.3), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_storm(s, dur):
-    cloud = _cloud(3.0, color=GREY, op=0.6).move_to(_zone(0.15))
-    bolts = VGroup(*[Polygon(ORIGIN, UP * 0.28 + RIGHT * 0.14, UP * 0.1 + RIGHT * 0.26,
-                             UP * 0.42 + RIGHT * 0.38, color=ACCENT, stroke_width=3
-                             ).scale(0.9).move_to(cloud.get_bottom() + DOWN * 0.35 + RIGHT * dx)
-                     for dx in (-0.9, 0.6)])
-    route = Arc(radius=2.6, start_angle=PI * 0.85, angle=-PI * 0.7, color=GREEN,
-                stroke_width=4).move_to(cloud.get_center())
-    pl = _plane(0.5)
-    pl["all"].move_to(route.point_from_proportion(0.12)).rotate(-30 * DEGREES)
-    lbl = _label("Memutar Sel Badai, Bukan Menembus", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(cloud, bolts, route, pl["all"], lbl)
-    s.play(FadeIn(cloud), Create(bolts), run_time=0.9)
-    s.play(Create(route), Write(lbl), run_time=0.9)
-    s.play(MoveAlongPath(pl["all"], route), run_time=1.2)
-    return grp
-
-def atc_windshear(s, dur):
-    gnd = _ground()
-    path = Line(_zone(0.7) + LEFT * 3.2, _zone(-1.2) + RIGHT * 2.6,
-                color=ACCENT, stroke_width=3)
-    pl = _plane(0.6)
-    pl["all"].move_to(path.point_from_proportion(0.55)).rotate(-8 * DEGREES)
-    w1 = Arrow(_zone(-0.85) + RIGHT * 0.4, _zone(-0.85) + LEFT * 1.1,
-               color=WATER, stroke_width=4)
-    w2 = Arrow(_zone(-0.45) + LEFT * 0.9, _zone(-0.45) + RIGHT * 1.4,
-               color=DANGER, stroke_width=4)
-    ws = _T("WINDSHEAR", size=18, color=DANGER, bold=True).move_to(_zone(1.0))
-    lbl = _label("Deteksi Dini Menyelamatkan Nyawa", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-2.0) + LEFT * 0.8)
-    grp = VGroup(gnd, path, pl["all"], w1, w2, ws, lbl)
-    s.play(FadeIn(gnd), Create(path), FadeIn(pl["all"]), Write(ws), run_time=1.0)
-    s.play(GrowArrow(w1), GrowArrow(w2), Write(lbl), run_time=1.0)
-    s.play(pl["all"].animate.shift(RIGHT * 0.7 + DOWN * 0.18), run_time=0.8)
-    return grp
-
-def atc_weathermap(s, dur):
-    scr = RoundedRectangle(corner_radius=0.18, width=6.6, height=3.2, color=PRIMARY,
-                           fill_color="#0A1122", fill_opacity=0.9, stroke_width=3
-                           ).move_to(_zone(-0.1))
-    c1 = _cloud(1.3, color=GREY, op=0.6).move_to(scr.get_center() + UL * 0.8)
-    c2 = _cloud(1.1, color=GREY, op=0.5).move_to(scr.get_center() + RIGHT * 1.9 + UP * 0.3)
-    bolt = Polygon(ORIGIN, UP * 0.22 + RIGHT * 0.12, UP * 0.08 + RIGHT * 0.22,
-                   UP * 0.32 + RIGHT * 0.3, color=ACCENT, stroke_width=3
-                   ).move_to(c1.get_bottom() + DOWN * 0.3)
-    jet = Line(scr.get_left() + UP * 0.1, scr.get_right() + UP * 0.1, color=WATER,
-               stroke_width=3).set_opacity(0.6)
-    jt = _T("arus jet", size=13, color=WATER).next_to(jet, UP, buff=0.06)
-    route = ArcBetweenPoints(scr.get_center() + LEFT * 2.6 + DOWN * 0.9,
-                             scr.get_center() + RIGHT * 2.6 + DOWN * 0.9,
-                             angle=-PI / 3, color=GREEN, stroke_width=4)
-    rt = _T("rute aman", size=14, color=GREEN, bold=True).next_to(route, DOWN, buff=0.1)
-    lbl = _label("Cuaca Digambar Sebelum Rute Disetujui", color=WHITE, size=20, bold=True
-                 ).move_to(_zone(-2.1))
-    grp = VGroup(scr, c1, c2, bolt, jet, jt, route, rt, lbl)
-    s.play(Create(scr), run_time=0.8)
-    s.play(FadeIn(c1), FadeIn(c2), Create(bolt), Create(jet), Write(jt), run_time=1.0)
-    s.play(Create(route), Write(rt), Write(lbl), run_time=1.0)
-    return grp
-
-def atc_mayday(s, dur):
-    pl = _plane(0.75)
-    pl["all"].move_to(_zone(0.35) + LEFT * 1.6)
-    may = _T("MAYDAY · MAYDAY", size=30, color=DANGER, bold=True
-             ).move_to(_zone(1.15))
-    ring = DashedVMobject(Circle(radius=1.35, color=DANGER, stroke_width=3), num_dashes=20
-                          ).move_to(pl["all"].get_center())
-    clear = _T("landasan dikosongkan", size=17, color=ACCENT).move_to(_zone(-0.7))
-    away = Arrow(_zone(-1.4) + LEFT * 1.1, _zone(-1.4) + LEFT * 3.2,
-                 color=GREY, stroke_width=4)
-    other = _plane_top(0.4)
-    other["all"].move_to(_zone(-1.4) + LEFT * 0.6).rotate(PI)
-    lbl = _label("Seluruh Frekuensi Hening", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(pl["all"], may, ring, clear, away, other["all"], lbl)
-    s.play(FadeIn(pl["all"]), Write(may), Create(ring), run_time=1.0)
-    s.play(FadeIn(other["all"]), GrowArrow(away), Write(clear), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_squawk(s, dur):
-    scr = RoundedRectangle(corner_radius=0.15, width=3.6, height=2.4, color=PRIMARY,
-                           fill_color="#0A1122", fill_opacity=0.9, stroke_width=3
-                           ).move_to(_zone(-0.1) + LEFT * 2.7)
-    dot = Dot(radius=0.1, color=DANGER, fill_color=DANGER, fill_opacity=1
-              ).move_to(scr.get_center() + RIGHT * 0.7 + UP * 0.3)
-    code = _T("7700", size=44, color=DANGER, bold=True).move_to(
-        _zone(0.0) + RIGHT * 2.6)
-    world = _T("dikenali seluruh radar dunia", size=16, color=WHITE
-               ).next_to(code, DOWN, buff=0.2)
-    lbl = _label("Sinyal Darurat Universal", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.75))
-    grp = VGroup(scr, dot, code, world, lbl)
-    s.play(Create(scr), FadeIn(dot, scale=2.0), run_time=0.9)
-    s.play(FadeIn(code, scale=1.6), FadeIn(world), Write(lbl), run_time=1.1)
-    s.play(Indicate(dot, color=DANGER), run_time=0.7)
-    return grp
-
-def atc_rescue(s, dur):
-    gnd = _ground()
-    rw = _runway(6.0, 0.5).move_to(_zone(-1.5))
-    t1 = _truck(DANGER, 0.9)
-    t1.move_to(_zone(-1.05) + LEFT * 2.2)
-    t2 = _truck(WHITE, 0.9)
-    t2.move_to(_zone(-1.05) + LEFT * 0.3)
-    cross = _T("+", size=26, color=DANGER, bold=True).move_to(t2.get_center() + UP * 0.12)
-    q = Arrow(t2.get_right() + RIGHT * 0.2, _zone(-1.05) + RIGHT * 2.6,
-              color=ACCENT, stroke_width=4)
-    lbl = _label("Pemadam & Ambulans ke Posisi Siaga", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(0.35))
-    grp = VGroup(gnd, rw, t1, t2, cross, q, lbl)
-    s.play(FadeIn(gnd), Create(rw), run_time=0.8)
-    s.play(FadeIn(t1, shift=RIGHT * 0.5), FadeIn(t2, shift=RIGHT * 0.5),
-           Write(cross), Write(lbl), run_time=1.0)
-    s.play(GrowArrow(q), run_time=0.8)
-    return grp
-
-def atc_handover(s, dur):
-    m1 = _stickman(0.8, pose="point").move_to(_zone(0.0) + LEFT * 2.6)
-    m2 = _stickman(0.8).move_to(_zone(0.0) + RIGHT * 2.6)
-    board = RoundedRectangle(corner_radius=0.1, width=2.3, height=1.6, color=WHITE,
-                             fill_color=WHITE, fill_opacity=0.12, stroke_width=2
-                             ).move_to(_zone(0.0))
-    lines = VGroup(*[Line(board.get_left() + RIGHT * 0.25 + UP * (0.45 - i * 0.35),
-                          board.get_left() + RIGHT * (0.7 + (i % 2) * 0.6) + UP * (0.45 - i * 0.35),
-                          color=WHITE, stroke_width=2).set_opacity(0.6) for i in range(4)])
-    read = _T("dibacakan ulang", size=14, color=ACCENT).next_to(board, UP, buff=0.12)
-    lbl = _label("Satu per Satu, Tanpa Yang Tertinggal", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.9))
-    grp = VGroup(m1, m2, board, lines, read, lbl)
-    s.play(FadeIn(m1), FadeIn(m2), Create(board), run_time=0.9)
-    s.play(Create(lines), Write(read), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_rest(s, dur):
-    clock = Circle(radius=1.0, color=WHITE, stroke_width=4).move_to(_zone(0.0) + LEFT * 2.7)
-    hand = Line(clock.get_center(), clock.get_center() + UP * 0.55 + RIGHT * 0.35,
-                color=DANGER, stroke_width=4)
-    mark = Arc(radius=1.18, start_angle=PI * 0.25, angle=PI * 0.5, color=ACCENT,
-               stroke_width=5).move_to(clock.get_center())
-    h2 = _T("2 jam", size=15, color=ACCENT).next_to(mark, UR, buff=0.05)
-    cup = VGroup(RoundedRectangle(corner_radius=0.05, width=0.7, height=0.55, color=WHITE,
-                                 fill_color=WHITE, fill_opacity=0.2, stroke_width=3),
-                 Arc(radius=0.16, start_angle=-PI / 2, angle=PI, color=WHITE, stroke_width=3
-                     ).move_to(RIGHT * 0.45))
-    cup.move_to(_zone(-0.1) + RIGHT * 0.4)
-    steam = VGroup(*[Line(ORIGIN, UP * 0.22, color=WHITE, stroke_width=2).set_opacity(0.6
-                    ).move_to(cup.get_top() + UP * 0.15 + RIGHT * dx) for dx in (-0.15, 0.15)])
-    rest = _T("rehat wajib", size=17, color=GREEN, bold=True).next_to(cup, DOWN, buff=0.15)
-    lbl = _label("Konsentrasi Menurun Setelah 2 Jam", color=WHITE, size=21, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(clock, hand, mark, h2, cup, steam, rest, lbl)
-    s.play(Create(clock), Create(hand), Create(mark), Write(h2), run_time=1.0)
-    s.play(FadeIn(cup), Create(steam), Write(rest), Write(lbl), run_time=1.1)
-    return grp
-
-def atc_language(s, dur):
-    globe = Circle(radius=1.35, color=PRIMARY, stroke_width=4).move_to(_zone(-0.1))
-    mer = VGroup(*[Ellipse(width=0.5 + i * 0.5, height=2.7, color=PRIMARY, stroke_width=2
-                           ).set_opacity(0.7).move_to(globe.get_center()) for i in range(3)])
-    eq = Line(globe.get_left(), globe.get_right(), color=PRIMARY, stroke_width=2
-              ).set_opacity(0.7)
-    b1 = _bubble("Good morning", ACCENT, 15)
-    b1.move_to(globe.get_center() + LEFT * 2.9 + UP * 0.55)
-    b2 = _bubble("Readback correct", GREEN, 15)
-    b2.move_to(globe.get_center() + RIGHT * 2.9 + DOWN * 0.55)
-    a1 = Arrow(b1.get_right(), globe.get_center() + UL * 0.6, color=ACCENT, stroke_width=3)
-    a2 = Arrow(b2.get_left(), globe.get_center() + DR * 0.6, color=GREEN, stroke_width=3)
-    lbl = _label("Satu Bahasa di Langit: Inggris", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.05))
-    grp = VGroup(globe, mer, eq, b1, b2, a1, a2, lbl)
-    s.play(Create(globe), Create(mer), Create(eq), run_time=1.0)
-    s.play(FadeIn(b1, shift=RIGHT * 0.3), GrowArrow(a1), run_time=0.8)
-    s.play(FadeIn(b2, shift=LEFT * 0.3), GrowArrow(a2), Write(lbl), run_time=0.9)
-    return grp
-
-def atc_night(s, dur):
-    moon = Circle(radius=0.5, color=WHITE, fill_color=WHITE, fill_opacity=0.85,
-                  stroke_width=0).move_to(_zone(1.0) + RIGHT * 4.2)
-    tw = _atc_tower(1.0, alpha=0.5)
-    tw["all"].move_to(_zone(0.0) + LEFT * 2.8)
-    win = VGroup(*[Dot(radius=0.05, color=ACCENT, fill_color=ACCENT, fill_opacity=1
-                       ).move_to(tw["cab"].get_center() + RIGHT * dx) for dx in (-0.4, 0, 0.4)])
-    blips = VGroup()
-    for i, bx in enumerate((-4.6, -3.7, -0.8, 0.3, 1.4, 3.4)):
-        blips.add(Dot(radius=0.06, color=GREEN, fill_color=GREEN, fill_opacity=0.9
-                      ).move_to(_zone(0.35 + (i % 3) * 0.28) + RIGHT * bx))
-    lbl = _label("Ratusan Keputusan Setiap Menit", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-1.95))
-    grp = VGroup(moon, tw["all"], win, blips, lbl)
-    s.play(FadeIn(moon), FadeIn(tw["all"]), run_time=0.9)
-    s.play(LaggedStart(*[FadeIn(b, scale=1.5) for b in blips], lag_ratio=0.15),
-           FadeIn(win), Write(lbl), run_time=1.2)
-    return grp
-
-def atc_watch(s, dur):
-    man = _stickman(0.9).move_to(_zone(-1.05) + LEFT * 3.4)
-    pl = _plane(0.55)
-    pl["all"].move_to(_zone(0.55) + RIGHT * 2.8)
-    gaze = DashedLine(man.get_center() + UP * 0.5, pl["all"].get_center() + LEFT * 0.4,
-                      color=ACCENT, stroke_width=3)
-    safe = _T("jalur aman ✓", size=16, color=GREEN, bold=True
-              ).next_to(pl["all"], UP, buff=0.15)
-    lbl = _label("Ada yang Mengawasi Setiap Langit", color=WHITE, size=22, bold=True
-                 ).move_to(_zone(-2.0))
-    grp = VGroup(man, pl["all"], gaze, safe, lbl)
-    s.play(FadeIn(man), FadeIn(pl["all"], shift=LEFT * 0.5), run_time=0.9)
-    s.play(Create(gaze), Write(safe), Write(lbl), run_time=1.1)
-    return grp
-
 VISUALS = {
     "history_ancient": vis_history_ancient,
     "history_wood": vis_history_wood,
@@ -1616,26 +764,6 @@ VISUALS = {
     "type_missile": vis_type_missile,
     "type_attack": vis_type_attack,
     "type_stealth": vis_type_stealth,
-    # ---------- MENARA ATC ----------
-    "atc_tower_intro": atc_tower_intro, "atc_tower_role": atc_tower_role,
-    "atc_history": atc_history, "atc_tower_cab": atc_tower_cab,
-    "atc_tower_shaft": atc_tower_shaft, "atc_lights": atc_lights,
-    "atc_radar_primary": atc_radar_primary, "atc_radar_secondary": atc_radar_secondary,
-    "atc_radar_screen": atc_radar_screen, "atc_cab_desk": atc_cab_desk,
-    "atc_cab_strips": atc_cab_strips, "atc_cab_team": atc_cab_team,
-    "atc_radio_phrase": atc_radio_phrase, "atc_radio_clash": atc_radio_clash,
-    "atc_readback": atc_readback, "atc_taxi": atc_taxi,
-    "atc_holdshort": atc_holdshort, "atc_takeoff": atc_takeoff,
-    "atc_climb": atc_climb, "atc_levels": atc_levels,
-    "atc_center": atc_center, "atc_glidepath": atc_glidepath,
-    "atc_touchdown": atc_touchdown, "atc_autoland": atc_autoland,
-    "atc_separation": atc_separation, "atc_vector": atc_vector,
-    "atc_wake": atc_wake, "atc_storm": atc_storm,
-    "atc_windshear": atc_windshear, "atc_weathermap": atc_weathermap,
-    "atc_mayday": atc_mayday, "atc_squawk": atc_squawk,
-    "atc_rescue": atc_rescue, "atc_handover": atc_handover,
-    "atc_rest": atc_rest, "atc_language": atc_language,
-    "atc_night": atc_night, "atc_watch": atc_watch,
 }
 
 # Durasi play asli tiap visual (diukur via instrumentasi, deterministik)
@@ -1653,20 +781,6 @@ VISUAL_SPENT = {
     "life_oxygen": 2.3, "life_supply": 2.1, "life_days": 2.3,
     "rescue_dsv": 2.3, "escape_suit": 2.5, "deep_mystery": 2.4,
     "type_missile": 2.3, "type_attack": 1.5, "type_stealth": 1.6,
-    # ATC: durasi play asli tiap fungsi (perkiraan konservatif)
-    "atc_tower_intro": 2.7, "atc_tower_role": 2.1, "atc_history": 2.1,
-    "atc_tower_cab": 2.3, "atc_tower_shaft": 2.2, "atc_lights": 2.8,
-    "atc_radar_primary": 2.7, "atc_radar_secondary": 2.8, "atc_radar_screen": 3.2,
-    "atc_cab_desk": 2.1, "atc_cab_strips": 2.1, "atc_cab_team": 2.1,
-    "atc_radio_phrase": 2.6, "atc_radio_clash": 1.9, "atc_readback": 1.9,
-    "atc_taxi": 3.1, "atc_holdshort": 2.6, "atc_takeoff": 2.3,
-    "atc_climb": 2.4, "atc_levels": 2.1, "atc_center": 2.8,
-    "atc_glidepath": 2.3, "atc_touchdown": 2.8, "atc_autoland": 3.0,
-    "atc_separation": 2.0, "atc_vector": 2.9, "atc_wake": 2.0,
-    "atc_storm": 3.1, "atc_windshear": 2.8, "atc_weathermap": 2.8,
-    "atc_mayday": 2.1, "atc_squawk": 2.7, "atc_rescue": 2.6,
-    "atc_handover": 2.0, "atc_rest": 2.1, "atc_language": 2.7,
-    "atc_night": 2.1, "atc_watch": 2.0,
 }
 
 def _spent(key):
@@ -1701,6 +815,19 @@ class ExplainerScene(BaseScene):
         primary = brand.get("primary_color", PRIMARY)
         accent = brand.get("accent_color", ACCENT)
 
+        # ---- aset vektor otomatis (pipeline/assets.py) ----
+        asset_on = str(data.get("assets", "auto")).lower() != "off"
+        try:
+            ov = dict(data.get("asset_overrides") or {})
+            ov["__enabled__"] = asset_on
+            # policy zero-attribution: default REJECT lisensi butuh kredit;
+            # `assets_attribution: true` di YAML = opt-in eksplisit
+            ov["__allow_attr__"] = str(data.get("assets_attribution", "")).lower() \
+                in ("1", "true", "yes", "ya", "benar")
+            set_asset_overrides(ov)
+        except Exception:
+            pass
+
         wc = lambda t: max(len(str(t).split()), 1)
 
         # ---- normalisasi konten (dukung format string & dict) ----
@@ -1718,19 +845,6 @@ class ExplainerScene(BaseScene):
         q_text = str(data.get("question", ""))
         c_text = str(data.get("conclusion", ""))
         n_sec = len(sections)
-
-        # ---- aset vektor otomatis (pipeline/assets.py) ----
-        asset_on = str(data.get("assets", "auto")).lower() != "off"
-        try:
-            ov = dict(data.get("asset_overrides") or {})
-            ov["__enabled__"] = asset_on
-            # policy zero-attribution: default REJECT lisensi butuh kredit;
-            # `assets_attribution: true` di YAML = opt-in eksplisit
-            ov["__allow_attr__"] = str(data.get("assets_attribution", "")).lower() \
-                in ("1", "true", "yes", "ya", "benar")
-            set_asset_overrides(ov)
-        except Exception:
-            pass
 
         # ---- hitung target durasi total video ----
         adur = 0.0
@@ -1775,9 +889,6 @@ class ExplainerScene(BaseScene):
         wg_h = [max(leftover * (wc(h) + 4) / W, 0.1) for h, _ in sections]
         wg_p = [[max(leftover * (wc(t) + 6) / W, 0.12) for t, _ in pts] for _, pts in sections]
 
-        # kendaraan maskot episode: submarine (default) atau plane
-        VEH_PLANE = str(data.get("outro_vehicle", "submarine")) == "plane"
-
         # ================= INTRO =================
         self.intro()  # dari BaseScene (nama channel) — ±1.5s
 
@@ -1788,18 +899,13 @@ class ExplainerScene(BaseScene):
                      ).arrange(DOWN, buff=0.22).next_to(ch, DOWN, buff=0.45)
         box = SurroundingRectangle(ttl, color=primary, corner_radius=0.12, buff=0.3)
         box.set_fill(primary, opacity=0.15)
-        if VEH_PLANE:
-            swim = _plane(0.75)
-            swimv = swim["all"]
-        else:
-            swim = _submarine(0.8)
-            swimv = swim["all"]
-        swimv.move_to(LEFT * 7.5 + DOWN * 2.0)
+        swim = _submarine(0.8)
+        swim["all"].move_to(LEFT * 7.5 + DOWN * 2.0)
         self.play(FadeIn(ch), run_time=0.6)
         self.play(DrawBorderThenFill(box), Write(ttl), run_time=1.4)
-        self.add(swimv)
-        self.play(swimv.animate.move_to(RIGHT * 7.5 + DOWN * 2.0), run_time=1.3)
-        self.play(FadeOut(ch), FadeOut(ttl), FadeOut(box), FadeOut(swimv), run_time=0.7)
+        self.add(swim["all"])
+        self.play(swim["all"].animate.move_to(RIGHT * 7.5 + DOWN * 2.0), run_time=1.3)
+        self.play(FadeOut(ch), FadeOut(ttl), FadeOut(box), FadeOut(swim["all"]), run_time=0.7)
         # total intro+judul ≈ 5.5s
 
         # ================= PERTANYAAN =================
@@ -1807,18 +913,13 @@ class ExplainerScene(BaseScene):
         qb.set_width(min(qb.width, 10.8))
         qb.to_edge(UP, buff=1.5)
         bigq = _T("?", size=64, color=accent, bold=True).move_to(_zone(0.1) + RIGHT * 3.6)
-        if VEH_PLANE:
-            sil = _plane(0.65)
-            silv = sil["all"]
-        else:
-            sil = _submarine(0.7)
-            silv = sil["all"]
-        silv.move_to(_zone(-0.7) + LEFT * 2.2)
+        sil = _submarine(0.7)
+        sil["all"].move_to(_zone(-0.7) + LEFT * 2.2)
         self.play(FadeIn(qb, shift=DOWN), run_time=IN_Q)
-        self.play(FadeIn(bigq, scale=1.6), FadeIn(silv, shift=RIGHT * 0.5), run_time=QVIS)
+        self.play(FadeIn(bigq, scale=1.6), FadeIn(sil["all"], shift=RIGHT * 0.5), run_time=QVIS)
         if wg_q > 0.05:
             self.wait(wg_q)
-        self.play(FadeOut(qb), FadeOut(bigq), FadeOut(silv), run_time=OUT_Q)
+        self.play(FadeOut(qb), FadeOut(bigq), FadeOut(sil["all"]), run_time=OUT_Q)
 
         # ================= SECTIONS =================
         for si, (heading, pts) in enumerate(sections):
@@ -1885,7 +986,7 @@ class ExplainerScene(BaseScene):
         cbox = RoundedRectangle(corner_radius=0.22, width=13.0, height=4.3, color=accent,
                                 stroke_width=3).move_to([0, 0.3, 0])
         cbox.set_fill(accent, opacity=0.07)
-        clines = _wrap(c_text, 74, 10)
+        clines = _wrap(c_text, 72, 7)
         ctxt = VGroup(*[_T(l, size=21, color=accent, bold=False) for l in clines]
                       ).arrange(DOWN, buff=0.15).move_to(cbox.get_center())
         self.play(FadeIn(cbox), run_time=IN_C)
@@ -1897,20 +998,19 @@ class ExplainerScene(BaseScene):
         # ================= OUTRO =================
         cta = _T("Subscribe untuk episode berikutnya", size=32, color=accent, bold=True)
         cta.to_edge(UP, buff=2.2)
-        if VEH_PLANE:
-            veh = _plane(0.9)
-            vehg, spin = veh["all"], Rotate(veh["wing"], angle=0.55)
-        else:
-            veh = _submarine(0.9)
-            vehg, spin = veh["all"], Rotate(veh["prop"], angle=3 * PI)
-        vehg.move_to(DOWN * 1.6)
-        self.play(FadeIn(cta, shift=UP), FadeIn(vehg), run_time=0.9)
-        self.play(spin, vehg.animate.shift(RIGHT * 1.2), run_time=1.4)
+        sub2 = _submarine(0.9)
+        sub2["all"].move_to(DOWN * 1.6)
+        self.play(FadeIn(cta, shift=UP), FadeIn(sub2["all"]), run_time=0.9)
+        self.play(Rotate(sub2["prop"], angle=3 * PI),
+                  sub2["all"].animate.shift(RIGHT * 1.2), run_time=1.4)
         self.wait(1.6)
-        self.play(FadeOut(cta), FadeOut(vehg), run_time=0.8)
+        self.play(FadeOut(cta), FadeOut(sub2["all"]), run_time=0.8)
 
         self.wait(4.3)
 
 
 def build_scene(data, config):
     return ExplainerScene(data=data, config=config)
+
+
+

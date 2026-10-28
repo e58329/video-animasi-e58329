@@ -1,0 +1,2 @@
+manim>=0.18
+edge-tts>=6.1      # opsional: hanya jika TTS_BACKEND=edge (default)

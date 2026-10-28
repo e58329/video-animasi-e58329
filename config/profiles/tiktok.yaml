@@ -1,0 +1,31 @@
+name: tiktok
+aspect_ratio: "9:16"
+resolution: [1080, 1920]
+fps: 30
+
+target_duration_sec: 45
+hard_max_duration_sec: 180
+hard_min_duration_sec: 15
+min_scene_sec: 2
+max_scene_sec: 6
+hook_duration_sec: 3
+
+tts:
+  speed: 1.12
+  voice: "id-ID-Standard-A"
+
+scene:
+  transition: "cut"
+  transition_duration: 0.15
+  motion_intensity: "high"
+
+subtitles:
+  enabled: true
+  font_size: 72
+  position: "center_bottom"
+  style: "bold_outline"
+  max_chars_per_line: 28
+
+audio:
+  bgm_volume: 0.35
+  ducking: true
