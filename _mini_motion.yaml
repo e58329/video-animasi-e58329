@@ -1,0 +1,56 @@
+# Demo motion graphics lokal (pymotion) — TANPA internet, TANPA lisensi
+# Semua visual "motion:" dirender oleh repo sendiri lewat template di
+# pipeline/motion/clips.py, lalu diembed sebagai kartu (frame PNG swap).
+#   kinetic_hook -> kata besar slide-in per baris
+#   stat_counter -> angka count-up + progress bar
+#   route_map    -> peta reveal rute + pulse tujuan
+#   bar_compare  -> perbandingan batang blocky-fill
+# Spec tiap template diatur di motion_overrides (hash spesifikasi = cache key,
+# ganti spec -> otomatis render ulang).
+title: "Uji Motion Graphics Lokal"
+template: "explainer"
+question: "Keempat kartu ini digambar langsung oleh repo sendiri memakai pymotion. Tidak ada satu piksel pun yang diunduh dari internet, jadi nol kewajiban atribusi."
+sections:
+  - heading: "1. Hook Kinetik"
+    points:
+      - text: "Kata-kata besar ini muncul satu per satu memakai spring bawaan pymotion."
+        visual: "motion:kinetic_hook"
+  - heading: "2. Angka Berhitung"
+    points:
+      - text: "Angka ini naik dari nol sampai tiga ribu delapan ratus meter memakai komponen counter asli."
+        visual: "motion:stat_counter"
+  - heading: "3. Peta Rute"
+    points:
+      - text: "Peta ini menyalakan rute titik demi titik sampai tujuan, lalu cincinnya berdenyut."
+        visual: "motion:route_map"
+  - heading: "4. Perbandingan"
+    points:
+      - text: "Batang diisi blok demi blok untuk membandingkan tekanan permukaan dan tekanan kedalaman."
+        visual: "motion:bar_compare"
+conclusion: "Keempat template motion ini cache per spesifikasi, jadi render kedua langsung nyala. Kombinasi gambar manual, motion lokal, dan vektor C C nol menutup hampir semua kebutuhan visual episode."
+motion_overrides:
+  kinetic_hook:
+    lines: ["TAHU", "GAK SIH?"]
+    colors: ["#F5F7FA", "#FFC107"]
+    size: 78
+  stat_counter:
+    label: "Kedalaman Maksimum"
+    value_to: 3800
+    fmt: "{:,.0f}"
+    suffix: " m"
+    caption: "Lebih dalam dari menara Sarang Balak"
+  route_map:
+    title: "Jalur Penyelaman"
+    sub: "Permukaan menuju dasar laut"
+    origin: "PERMUKAAN"
+    dest: "DASAR"
+    points: [[0.12, 0.28], [0.40, 0.52], [0.62, 0.70], [0.86, 0.42]]
+  bar_compare:
+    title: "Tekanan yang Dialami Lambung"
+    bars:
+      - {label: "Permukaan", value: 1, unit: " atm"}
+      - {label: "100 m", value: 11, unit: " atm"}
+      - {label: "380 m", value: 38, unit: " atm"}
+    unit: " atm"
+    hi: 2
+audio_duration: 58

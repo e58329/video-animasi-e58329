@@ -24,3 +24,4 @@ __pycache__/
 *.png
 *.jpg
 output_test_*
+motion/cache/

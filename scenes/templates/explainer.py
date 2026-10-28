@@ -12,6 +12,7 @@ from manim import *
 import numpy as np
 from scenes.base_scene import BaseScene
 from scenes.templates.asset_visual import vis_asset, set_asset_overrides
+from scenes.templates.motion_visual import vis_motion, set_motion_overrides
 
 # ---------- BRAND ----------
 PRIMARY = "#1E88E5"
@@ -828,6 +829,12 @@ class ExplainerScene(BaseScene):
         except Exception:
             pass
 
+        # ---- motion graphics lokal (pipeline/motion/clips.py) ----
+        try:
+            set_motion_overrides(dict(data.get("motion_overrides") or {}))
+        except Exception:
+            pass
+
         wc = lambda t: max(len(str(t).split()), 1)
 
         # ---- normalisasi konten (dukung format string & dict) ----
@@ -945,6 +952,19 @@ class ExplainerScene(BaseScene):
                 try:
                     if fn is not None:
                         vis_grp = fn(self, _spent(pvis))
+                    elif pvis.startswith("motion:"):
+                        # motion graphics lokal (pymotion) -> kartu.
+                        # durasi clip = play + gap tunggu biar motion abis
+                        # tepat saat poin selesai (0.7s cadangan fade internal)
+                        try:
+                            vis_grp = vis_motion(
+                                self, _spent(pvis) + wg_p[si][pi], key=pvis)
+                        except Exception as me:
+                            print(f"[motion] '{pvis}': {me} -> fallback generic")
+                            for m in list(self.mobjects):
+                                if m is not bg and m is not hb and m is not hbar and m is not bullet:
+                                    self.remove(m)
+                            vis_grp = vis_generic(self, 1.6, key=pvis)
                     elif asset_on:
                         # visual tidak ada di registry -> vektor otomatis
                         try:
