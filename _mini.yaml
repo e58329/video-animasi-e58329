@@ -1,0 +1,16 @@
+audio_duration: 40.0
+conclusion: Selesai tes mini.
+question: Kenapa begitu?
+sections:
+- heading: 1. H
+  points:
+  - text: Poin uji satu.
+    visual: ballast_water_in
+  - text: Poin uji dua.
+    visual: sonar_active
+- heading: 2. H
+  points:
+  - text: Poin uji tiga.
+    visual: ballast_tank
+template: explainer
+title: Mini

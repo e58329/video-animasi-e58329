@@ -1,0 +1,84 @@
+audio_duration: 95.0
+conclusion: Tes selesai.
+question: Tes 38 visual ATC.
+sections:
+- heading: U. Uji Massal
+  points:
+  - text: Visual 1.
+    visual: atc_tower_intro
+  - text: Visual 2.
+    visual: atc_tower_role
+  - text: Visual 3.
+    visual: atc_history
+  - text: Visual 4.
+    visual: atc_tower_cab
+  - text: Visual 5.
+    visual: atc_tower_shaft
+  - text: Visual 6.
+    visual: atc_lights
+  - text: Visual 7.
+    visual: atc_radar_primary
+  - text: Visual 8.
+    visual: atc_radar_secondary
+  - text: Visual 9.
+    visual: atc_radar_screen
+  - text: Visual 10.
+    visual: atc_cab_desk
+  - text: Visual 11.
+    visual: atc_cab_strips
+  - text: Visual 12.
+    visual: atc_cab_team
+  - text: Visual 13.
+    visual: atc_radio_phrase
+  - text: Visual 14.
+    visual: atc_radio_clash
+  - text: Visual 15.
+    visual: atc_readback
+  - text: Visual 16.
+    visual: atc_taxi
+  - text: Visual 17.
+    visual: atc_holdshort
+  - text: Visual 18.
+    visual: atc_takeoff
+  - text: Visual 19.
+    visual: atc_climb
+  - text: Visual 20.
+    visual: atc_levels
+  - text: Visual 21.
+    visual: atc_center
+  - text: Visual 22.
+    visual: atc_glidepath
+  - text: Visual 23.
+    visual: atc_touchdown
+  - text: Visual 24.
+    visual: atc_autoland
+  - text: Visual 25.
+    visual: atc_separation
+  - text: Visual 26.
+    visual: atc_vector
+  - text: Visual 27.
+    visual: atc_wake
+  - text: Visual 28.
+    visual: atc_storm
+  - text: Visual 29.
+    visual: atc_windshear
+  - text: Visual 30.
+    visual: atc_weathermap
+  - text: Visual 31.
+    visual: atc_mayday
+  - text: Visual 32.
+    visual: atc_squawk
+  - text: Visual 33.
+    visual: atc_rescue
+  - text: Visual 34.
+    visual: atc_handover
+  - text: Visual 35.
+    visual: atc_rest
+  - text: Visual 36.
+    visual: atc_language
+  - text: Visual 37.
+    visual: atc_night
+  - text: Visual 38.
+    visual: atc_watch
+template: explainer
+title: Uji Visual ATC

@@ -71,7 +71,7 @@ def process_episode(yaml_path):
         print("🔥 Meminta auto-subs membakar subtitle (Mohon tunggu)...")
         
         cmd_autosubs = f'auto-subs transcribe "{temp_combined}" --model small --burn -o "{out_name}"'
-        subprocess.run(cmd_autosubs, shell=True)
+        subprocess.run(f"python pipeline/make_subs.py \"{temp_yaml}\" \"{temp_combined}\" \"{out_name}\"", shell=True)
         
         if os.path.exists(temp_combined): os.remove(temp_combined)
         if os.path.exists(video_manim): os.remove(video_manim)

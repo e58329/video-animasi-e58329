@@ -1,0 +1,18 @@
+audio_duration: 40.0
+conclusion: "Jadi, tiga sistem itu bekerja bersama. Pertama, mata. Kedua, telinga. Ketiga, suara. Semua demi penerbangan yang aman."
+question: Ini tes layout baru.
+sections:
+- heading: "4. Anatomi Uji"
+  points:
+  - text: "Di bagian dalam, ruang-ruang tersusun rapi: kamar mesin, ruang torpedo, dapur, sampai kamar tidur."
+    visual: anatomy_rooms
+- heading: "11. Uji Bertahan"
+  points:
+  - text: "Rekor patrolinya luar biasa, lebih dari seratus hari di laut."
+    visual: life_days
+- heading: "12. Uji Darurat"
+  points:
+  - text: "Awak bisa menyelamatkan diri lewat menara pelarian."
+    visual: escape_suit
+template: explainer
+title: Mini Uji Layout

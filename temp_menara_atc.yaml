@@ -1,0 +1,185 @@
+audio_duration: 502.52
+conclusion: Menara ATC adalah perpaduan teknologi dan disiplin manusia. Pertama, radar
+  memberi mata. Kedua, radio memberi suara. Ketiga, aturan pemisahan memberi logika.
+  Keempat, pengendali terlatih menyatukan semuanya menjadi satu alur yang tertib.
+  Dari berjalan di landasan, lepas landas, jelajah ketinggian, sampai roda menyentuh
+  aspal lagi, setiap detik diawasi dan dicatat. Semua itu demi satu hal yang sama,
+  yaitu tiba di tujuan dengan selamat. Jangan lupa subscribe, agar dunia di atas awan
+  yang belum kamu lihat, bisa kamu pahami.
+outro_vehicle: plane
+question: Setiap hari, lebih dari seratus ribu pesawat lepas landas di seluruh dunia.
+  Di tengah langit yang begitu padat itu, siapa sebenarnya yang memastikan dua pesawat
+  tidak pernah saling bertabrakan? Jawabannya ada di sebuah menara tinggi.
+sections:
+- heading: 1. Sang Penjaga Langit
+  points:
+  - text: Menara pengawas lalu lintas udara ini bukan sekadar gedung tinggi di bandara.
+      Ia adalah otak yang mengatur seluruh pergerakan pesawat, mulai dari pintu parkir,
+      jalur roda, landasan, sampai rute lintas samudra.
+    visual: atc_tower_intro
+  - text: Tugas utamanya hanya satu tetapi mutlak, yaitu menjaga jarak. Jarak antar
+      pesawat, jarak dengan badai, dan ketertiban lepas landas serta pendaratan, semuanya
+      diawasi tanpa jeda siang maupun malam.
+    visual: atc_tower_role
+  - text: Kisahnya dimulai dari bandara Croydon di London tahun 1920. Dari menara
+      kayu sederhana dengan bendera sinyal dan telegraf, lahirlah profesi yang kini
+      menjaga langit di seluruh dunia.
+    visual: atc_history
+- heading: 2. Anatomi Menara
+  points:
+  - text: Menara ATC punya dua bagian utama. Pertama, kabin kaca di puncak setinggi
+      tiga puluh sampai enam puluh meter, yang memberi pandangan bulat tiga ratus
+      enam puluh derajat ke seluruh area bandara.
+    visual: atc_tower_cab
+  - text: Kedua, batang menara yang tampak sederhana ternyata padat. Di dalamnya berjalin
+      kabel listrik, saluran komunikasi, lift, dan tangga darurat yang menghubungkan
+      kabin dengan tanah.
+    visual: atc_tower_shaft
+  - text: Puncaknya juga dipasangi penyalur petir, lampu suar tahan kabut, dan antena
+      cadangan, supaya menara tetap berdiri tegak melayani penerbangan dalam cuaca
+      terburuk sekalipun.
+    visual: atc_lights
+- heading: '3. Mata di Langit: Radar'
+  points:
+  - text: Radar primer bekerja seperti gema. Ia memancarkan gelombang radio, lalu
+      menunggu pantulan dari badan pesawat. Dari arah dan waktu pantulan itu, posisi
+      pesawat langsung terungkap di layar.
+    visual: atc_radar_primary
+  - text: Radar sekunder lebih pintar lagi. Ia menyuruh transponder pesawat membalas
+      sinyal dengan kode identitas, ketinggian, dan nomor penerbangan, sehingga setiap
+      titik di layar punya nama yang jelas.
+    visual: atc_radar_secondary
+  - text: Di layar kendali, semua data itu menyatu menjadi satu peta yang hidup. Titik,
+      garis, label, dan jejak gerak dibaca sambil berlari melawan detik.
+    visual: atc_radar_screen
+- heading: 4. Di Dalam Kabin Kendali
+  points:
+  - text: Di dalam kabin, pengendali lalu lintas duduk menghadap deretan monitor radar
+      dan tumpukan strip penerbangan. Setiap titik kecil yang bergerak di layar membawa
+      puluhan nyawa manusia.
+    visual: atc_cab_desk
+  - text: Mereka memantau belasan pesawat sekaligus, memberi instruksi satu per satu,
+      lalu mencatat setiap perintah pada strip kertas, sebelum akhirnya sistem digital
+      mengambil alih peran itu.
+    visual: atc_cab_strips
+  - text: Ada tiga peran utama di kabin itu. Pengendali local yang mengurus landasan,
+      pengendali ground yang mengurus jalur roda, dan koordinator yang menyambung
+      keduanya dengan pusat rute.
+    visual: atc_cab_team
+- heading: 5. Bahasa Udara
+  points:
+  - text: Semua percakapan radio memakai frasa standar internasional. Izin naik diucapkan
+      cleared to climb, izin turun cleared to descend, dan izin lepas landas cleared
+      for takeoff, tanpa ruang untuk salah paham.
+    visual: atc_radio_phrase
+  - text: Satu frekuensi hanya boleh diisi satu suara. Kalau dua pesawat menekan tombol
+      radio bersamaan, sinyalnya bertabrakan dan instruksi penting bisa hilang dalam
+      sekejap mata.
+    visual: atc_radio_clash
+  - text: Setiap instruksi juga wajib dibacakan ulang oleh pilot, disebut readback.
+      Kalau satu angka saja salah, pengendali langsung mengoreksi sebelum pesawat
+      bergeming.
+    visual: atc_readback
+- heading: 6. Izin Menuju Landasan
+  points:
+  - text: Sebelum bergerak dari gerbang, kru kokpit wajib meminta izin berjalan. Menara
+      memeriksa seluruh jalur roda agar bebas, lalu memberi rute berjalan yang aman
+      menuju ujung landasan.
+    visual: atc_taxi
+  - text: Sebelum melintasi landasan aktif, pesawat wajib berhenti di titik hold short.
+      Garis kuning ganda di aspal itu batas yang tidak boleh dilewati tanpa izin tertulis.
+    visual: atc_holdshort
+  - text: 'Setelah rapi di ujung landasan, datang kalimat paling ikonik: runway dua
+      tujuh, cleared for takeoff. Detik itu juga mesin digas penuh dan pesawat menyebur
+      ke langit.'
+    visual: atc_takeoff
+- heading: 7. Naik ke Koridor Rute
+  points:
+  - text: Setelah lepas landas, menara menyerahkan kendali ke pusat radar pendekatan.
+      Pesawat memanjat menyusuri tangga ketinggian yang sudah digariskan, meter demi
+      meter menuju ketinggian jelajah.
+    visual: atc_climb
+  - text: Arah timur memakai ketinggian ganjil, arah barat memakai ketinggian genap.
+      Aturan sederhana ini memisahkan dua arus lalu lintas yang berlawanan arah, sehingga
+      keduanya tidak pernah bertemu.
+    visual: atc_levels
+  - text: Memasuki ketinggian jelajah, kendali beralih ke pusat pengatur rute yang
+      mengawasi ratusan mil. Berkat serah terima yang rapi, tidak ada satu pesawat
+      pun yang lepas pengawasan.
+    visual: atc_center
+- heading: 8. Pendekatan dan Pendaratan
+  points:
+  - text: Menjelang tujuan, pesawat dituntun turun menyusuri jalur melayang bergradien
+      tiga derajat yang disebut glide path. Sepanjang jalur itu, lampu pendekatan
+      berkedip memandu pilot sampai ambang landasan.
+    visual: atc_glidepath
+  - text: Menara memastikan landasan benar-benar kosong sebelum memberi izin mendarat.
+      Begitu roda utama menyentuh aspal, pesawat melambat pesat, dan menara mengucapkan
+      selamat datang.
+    visual: atc_touchdown
+  - text: Di bandara modern, sistem pendarat otomatis bahkan sanggup menuntun pesawat
+      mendarat di tengah kabut tebal. Tetapi keputusan terakhir selalu tetap di tangan
+      manusia.
+    visual: atc_autoland
+- heading: '9. Jarak Aman: Aturan Emas'
+  points:
+  - text: Di udara, dua pesawat dipisahkan minimal lima mil laut secara horizontal,
+      atau seribu kaki secara vertikal. Angka ini dijaga ketat, sebab langit tidak
+      punya rem darurat.
+    visual: atc_separation
+  - text: Kalau jarak mulai menyempit, pengendali langsung bertindak. Satu pesawat
+      disuruh memutar haluan, naik, atau turun, demi membuka kembali jarak yang aman.
+    visual: atc_vector
+  - text: Ada bahaya yang tak terlihat mata, yaitu pusaran udara dari pesawat besar.
+      Pesawat kecil di belakangnya wajib menunggu lebih lama, sebab pusaran itu bisa
+      menggulingkan sayap.
+    visual: atc_wake
+- heading: '10. Cuaca: Musuh Tak Terlihat'
+  points:
+  - text: Badai guntur adalah tamu tak diundang. Pengendali memutar arus pesawat mengitari
+      sel badai yang menggelegar, sebab turbulensi di dalamnya bisa mengguncang pesawat
+      dengan keras.
+    visual: atc_storm
+  - text: Angin geser paling berbahaya saat pendaratan. Aliran udara yang tiba-tiba
+      berubah arah bisa mencabik daya angkat, dan deteksi dini dari sensor bandara
+      menyelamatkan banyak nyawa.
+    visual: atc_windshear
+  - text: Karena itu peta cuaca selalu terbuka di kabin. Sambaran petir, awan es,
+      dan arus jet digambar dengan jelas sebelum sebuah rute disetujui.
+    visual: atc_weathermap
+- heading: '11. Darurat: Prioritas Mutlak'
+  points:
+  - text: Ketika pilot menyerukan mayday, seluruh frekuensi langsung hening. Menara
+      mengosongkan landasan, menghentikan lepas landas, dan menyalakan seluruh sistem
+      darurat bandara.
+    visual: atc_mayday
+  - text: Pilot pesawat darurat juga mengubah kode transponder menjadi tujuh tujuh
+      nol nol. Sinyal yang sama ini langsung dikenali oleh seluruh radar di dunia.
+    visual: atc_squawk
+  - text: Pemadam kebakaran, ambulans, dan tim penyelamat meluncur ke posisi siaga.
+      Pesawat lain diarahkan memutar menunggu, sebab landasan kini milik pesawat yang
+      sedang berjuang.
+    visual: atc_rescue
+- heading: 12. Kerja Tim 24 Jam
+  points:
+  - text: Pengendali bekerja bergiliran dengan serah terima yang sangat terstruktur.
+      Setiap pesawat aktif dibacakan ulang satu per satu, supaya tidak ada satu pun
+      titik yang tertinggal.
+    visual: atc_handover
+  - text: Waktu layanan juga diatur ketat. Konsentrasi pengendali terbukti menurun
+      tajam setelah dua jam, jadi mereka wajib rehat sebelum kelelahan mengancam ketepatan
+      keputusan.
+    visual: atc_rest
+  - text: 'Bahasa kerjanya pun diseragamkan: Inggris. Di langit internasional, pilot
+      dari negeri mana pun dan pengendali mana pun harus selalu bisa saling memahami.'
+    visual: atc_language
+- heading: 13. Rahasia di Balik Ketertiban
+  points:
+  - text: 'Dari luar, menara tampak diam dan tenang. Di dalamnya, ratusan keputusan
+      kecil diambil setiap menit, demi satu tujuan sederhana: semua pesawat harus
+      pulang dengan utuh.'
+    visual: atc_night
+  - text: Jadi berikutnya saat kamu melihat pesawat melintas jauh di atas, ingatlah,
+      ada pengendali di menara yang baru saja memastikan jalurnya benar-benar aman.
+    visual: atc_watch
+title: Bagaimana Menara ATC Bekerja
