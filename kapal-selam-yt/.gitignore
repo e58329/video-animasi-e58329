@@ -1,0 +1,5 @@
+build/
+out/
+media/
+__pycache__/
+.venv/
