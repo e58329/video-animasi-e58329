@@ -1,0 +1,22 @@
+# Demo pipeline aset otomatis: visual di bawah TIDAK punya fungsi
+# gambar manual di VISUALS -> otomatis dicari dari internet.
+# Coba juga override per-visual (opsional):
+asset_overrides:
+  rocket_launch:
+    collection: "fluent-emoji"   # paksa ikon warna-warni (multicolor)
+  deep_sea:
+    color: "#42A5F5"             # mono tapi warna air khas channel
+title: "Uji Coba Aset Otomatis"
+template: "explainer"
+question: "Kalimat uji untuk pipeline aset vektor otomatis. Semua visual di episode ini tidak digambar manual, tapi diambil otomatis dari internet lengkap dengan cek lisensinya."
+sections:
+  - heading: "1. Uji Ambil Otomatis"
+    points:
+      - text: "Roket meluncur, ikon ini datang dari koleksi fluent-emoji."
+        visual: "rocket_launch"
+      - text: "Magnet ditarik, ikon ini otomatis dipilih dari koleksi tabler."
+        visual: "magnet_field"
+      - text: "Laut dalam diwarnai biru sesuai override warna di file konten."
+        visual: "deep_sea"
+conclusion: "Kalau semua visual di atas tampil sebagai ikon berwarna, berarti pipeline aset otomatis bekerja. Kalau ada yang jatuh ke kartu generik, cek koneksi internet lalu render ulang."
+audio_duration: 46

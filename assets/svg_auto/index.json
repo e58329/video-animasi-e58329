@@ -1,0 +1,44 @@
+{
+  "rocket_launch": {
+    "file": "assets/svg_auto/rocket_launch.svg",
+    "provider": "iconify",
+    "query": "rocket launch",
+    "spec_hash": "95e101b5cd",
+    "asset_id": "fluent-emoji:rocket",
+    "source": "https://api.iconify.design/fluent-emoji/rocket.svg",
+    "license": "MIT",
+    "license_title": "MIT",
+    "attribution": "fluent-emoji:rocket — MIT — via Iconify (api.iconify.design)",
+    "needs_attribution": true,
+    "multicolor": false,
+    "fetched_at": "2026-10-28 13:44:51"
+  },
+  "magnet_field": {
+    "file": "assets/svg_auto/magnet_field.svg",
+    "provider": "iconify",
+    "query": "magnet field",
+    "spec_hash": "68d4885664",
+    "asset_id": "iconoven:magnet-field",
+    "source": "https://api.iconify.design/iconoven/magnet-field.svg",
+    "license": "MIT",
+    "license_title": "MIT",
+    "attribution": "iconoven:magnet-field — MIT — via Iconify (api.iconify.design)",
+    "needs_attribution": true,
+    "multicolor": false,
+    "fetched_at": "2026-10-28 13:44:55"
+  },
+  "deep_sea": {
+    "file": "assets/svg_auto/deep_sea.svg",
+    "provider": "iconify",
+    "query": "deep sea",
+    "spec_hash": "54fb28cf36",
+    "asset_id": "iconoven:deep-sea",
+    "source": "https://api.iconify.design/iconoven/deep-sea.svg",
+    "license": "MIT",
+    "license_title": "MIT",
+    "attribution": "iconoven:deep-sea — MIT — via Iconify (api.iconify.design)",
+    "needs_attribution": true,
+    "multicolor": false,
+    "fetched_at": "2026-10-28 13:44:59"
+  }
+}
