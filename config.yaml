@@ -1,0 +1,8 @@
+video:
+  resolution: "1920,1080"
+  fps: 30
+branding:
+  channel_name: "Bagaimana Dunia Bekerja"
+  primary_color: "#1E88E5"
+  accent_color: "#FFC107"
+  font_family: "Montserrat"
